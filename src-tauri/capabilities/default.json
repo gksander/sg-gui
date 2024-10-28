@@ -8,8 +8,24 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
+    "shell:allow-execute",
     "store:default",
-    "store:default",
-    "dialog:default"
+    "dialog:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "sg",
+          "cmd": "sg",
+          "args": [
+            "--pattern",
+            {
+              "validator": ".*"
+            },
+            "--json"
+          ]
+        }
+      ]
+    }
   ]
 }

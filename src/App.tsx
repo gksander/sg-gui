@@ -3,7 +3,7 @@ import "./App.css";
 import { useActiveProjectPath } from "./models/projects";
 import { queryClient } from "./queries";
 import { NoActiveProject } from "./components/NoActiveProject";
-
+import { ProjectView } from "./components/ProjectView";
 /**
  * TODO: wrap in
  * @returns TODO:
@@ -27,7 +27,7 @@ function BootstrapActiveProject() {
     return <NoActiveProject />;
   }
 
-  return <div>{activeProjectPath}</div>;
+  return <ProjectView path={activeProjectPath} />;
 }
 
 export default App;

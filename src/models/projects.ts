@@ -9,7 +9,7 @@ export function useActiveProjectPath() {
   });
 }
 
-export function setActiveProjectPath(path: string) {
+export function setActiveProjectPath(path: string | null) {
   queryClient.setQueryData(QueryKeys.activeProjectPath(), path);
   return setStoreValue("activeProjectPath", path);
 }
