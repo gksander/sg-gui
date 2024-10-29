@@ -22,7 +22,11 @@
             {
               "validator": ".*"
             },
-            "--json"
+            "--rewrite",
+            {
+              "validator": ".*"
+            },
+            "--json=compact"
           ]
         }
       ]

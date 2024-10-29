@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.shiki {
+  .line {
+    @apply min-w-full;
+  }
+  .line.diff.remove {
+    @apply bg-red-200;
+  }
+  .line.diff.add {
+    @apply bg-green-200;
+  }
+}
