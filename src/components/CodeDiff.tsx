@@ -16,17 +16,21 @@ export const CodeDiff = memo(({ change }: Props) => {
   const ogLines = change.text.split("\n");
   const newLines = change.replacement?.split("\n") ?? [];
 
-  const diffLines = !change.replacement
-    ? change.text
-    : ogLines
-        .flatMap((line, index) => {
-          if (line === newLines[index]) {
-            return line;
-          }
+  const diffLines = change.text;
 
-          return [`${line} // [!code --]`, `${newLines[index]} // [!code ++]`];
-        })
-        .join("\n");
+  return <pre>{diffLines}</pre>;
+
+  // const diffLines = !change.replacement
+  //   ? change.text
+  //   : ogLines
+  //       .flatMap((line, index) => {
+  //         if (line === newLines[index]) {
+  //           return line;
+  //         }
+
+  //         return [`${line} // [!code --]`, `${newLines[index]} // [!code ++]`];
+  //       })
+  //       .join("\n");
 
   return (
     <span

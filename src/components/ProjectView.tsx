@@ -4,6 +4,7 @@ import { SGResult } from "../types";
 import { setActiveProjectPath } from "../models/projects";
 import ReactDiffViewer, { DiffMethod } from "react-diff-viewer";
 import { CodeDiff } from "./CodeDiff";
+import { invoke } from "@tauri-apps/api/core";
 
 type Props = {
   path: string;
@@ -58,7 +59,7 @@ export function ProjectView({ path }: Props) {
         </div>
       </div>
 
-      <Results results={results} />
+      <Results results={results} projectPath={path} />
     </div>
   );
 
@@ -72,25 +73,28 @@ export function ProjectView({ path }: Props) {
     );
 
     const result = await command.execute();
-    console.log(result);
-
     const rawResults = JSON.parse(result.stdout) as SGResult[];
+
+    console.log(rawResults);
 
     const fileResults = rawResults.reduce<Record<string, SGResult[]>>(
       (acc, result) => {
-        acc[result.file] ??= [];
-
-        const startLine = result.range.start.line;
-        for (const i in acc[result.file]) {
-          const existingResultStartLine = acc[result.file][i].range.start.line;
-
-          if (existingResultStartLine > startLine) {
-            continue;
-          }
-          acc[result.file].splice(i, 0, result);
+        if (!acc[result.file]) {
+          acc[result.file] = [result];
+          return acc;
         }
 
-        acc[result.file].push(result);
+        const enteringByteOffset = result.range.byteOffset.start;
+        const insertIndex = acc[result.file].findIndex((otherResult) => {
+          return otherResult.range.byteOffset.start > enteringByteOffset;
+        });
+
+        if (insertIndex !== -1) {
+          acc[result.file].splice(insertIndex, 0, result);
+        } else {
+          acc[result.file].push(result);
+        }
+
         return acc;
       },
       {},
@@ -104,7 +108,13 @@ export function ProjectView({ path }: Props) {
   }
 }
 
-function Results({ results }: { results: Record<string, SGResult[]> }) {
+function Results({
+  results,
+  projectPath,
+}: {
+  results: Record<string, SGResult[]>;
+  projectPath: string;
+}) {
   const numFiles = Object.keys(results).length;
   const numResults = Object.values(results).flat().length;
 
@@ -116,7 +126,12 @@ function Results({ results }: { results: Record<string, SGResult[]> }) {
 
       {Object.entries(results).map(([file, results]) => (
         <div key={file} className="flex flex-col gap-2">
-          <div className="text-lg font-bold">{file}</div>
+          <div className="text-lg font-bold flex gap-3">
+            {file} ({results.length} results)
+            <button onClick={() => replaceAllInFile({ file, results })}>
+              Replace all
+            </button>
+          </div>
           {results.map((result) => (
             <CodeDiff key={`${result.file}:${result.lines}`} change={result} />
           ))}
@@ -124,4 +139,28 @@ function Results({ results }: { results: Record<string, SGResult[]> }) {
       ))}
     </div>
   );
+
+  function replaceAllInFile({
+    file,
+    results,
+  }: {
+    file: string;
+    results: SGResult[];
+  }) {
+    return invoke("replace_bytes_in_file", {
+      file,
+      projectPath,
+      bytesToReplace: results.map((result) => [
+        result.range.byteOffset.start,
+        result.range.byteOffset.end,
+        result.replacement,
+      ]),
+    })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
 }
