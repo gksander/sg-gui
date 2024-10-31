@@ -18,13 +18,10 @@
           "name": "sg",
           "cmd": "sg",
           "args": [
-            "--pattern",
+            "scan",
+            "--inline-rules",
             {
-              "validator": ".*"
-            },
-            "--rewrite",
-            {
-              "validator": ".*"
+              "validator": "*"
             },
             "--json=compact"
           ]

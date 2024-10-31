@@ -1,72 +1,106 @@
-import { Command } from "@tauri-apps/plugin-shell";
-import { memo, useState } from "react";
-import { SGResult } from "../types";
-import { setActiveProjectPath } from "../models/projects";
-import ReactDiffViewer, { DiffMethod } from "react-diff-viewer";
-import { CodeDiff } from "./CodeDiff";
 import { invoke } from "@tauri-apps/api/core";
+import { Command } from "@tauri-apps/plugin-shell";
+import { useCallback, useRef, useState } from "react";
+import { setActiveProjectPath } from "../models/projects";
+import { SGResult } from "../types";
+import { CodeDiff } from "./CodeDiff";
+import { ProjectHeader } from "./ProjectHeader";
+import Editor from "@monaco-editor/react";
+import { useDebouncedCallback } from "../utils/useDebouncedCallback";
+import { RuleResults } from "./RuleResults";
 
 type Props = {
   path: string;
 };
 
 export function ProjectView({ path }: Props) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(DEFAULT_RULE);
   const [replace, setReplace] = useState("");
   const [results, setResults] = useState<Record<string, SGResult[]>>({});
 
+  const onChange = useDebouncedCallback(
+    useCallback((ruleString: string | undefined) => {
+      if (ruleString) {
+        setInput(ruleString.trim());
+      }
+    }, []),
+    500,
+  );
+
   return (
-    <div className="p-8 flex flex-col gap-4">
-      <div className="text-2xl font-bold">
-        {path}
-        <button onClick={() => setActiveProjectPath(null)}>
-          Clear active project
-        </button>
-      </div>
+    <div className="h-screen overflow-hidden flex flex-col">
+      <ProjectHeader path={path} />
+      <div className="flex flex-row flex-1">
+        <div className="flex-1 h-full overflow-auto relative">
+          <Editor
+            height="100%"
+            language="yaml"
+            defaultValue={input}
+            options={{
+              minimap: { enabled: false },
+            }}
+            onChange={onChange}
+          />
+        </div>
 
-      <div className="flex flex-row gap-4">
-        <div>
-          <p>Enter input</p>
-          <div>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  doThing();
-                }
-              }}
-              placeholder="Search"
-            />
-          </div>
-
-          <p>Enter replacement</p>
-          <div>
-            <input
-              type="text"
-              value={replace}
-              onChange={(e) => setReplace(e.target.value)}
-              placeholder="Replace"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  doThing();
-                }
-              }}
-            />
-          </div>
-          <button onClick={doThing}>Do a thing...</button>
+        <div className="flex-1 h-full relative">
+          <RuleResults path={path} rule={input} />
         </div>
       </div>
 
-      <Results results={results} projectPath={path} />
+      {/* <div className="p-8">
+
+        <div className="flex flex-row gap-4">
+          <div>
+            <p>Enter input</p>
+            <div>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    doThing();
+                  }
+                }}
+                placeholder="Search"
+              />
+            </div>
+
+            <p>Enter replacement</p>
+            <div>
+              <input
+                type="text"
+                value={replace}
+                onChange={(e) => setReplace(e.target.value)}
+                placeholder="Replace"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    doThing();
+                  }
+                }}
+              />
+            </div>
+            <button onClick={doThing}>Do a thing...</button>
+          </div>
+        </div>
+      </div>
+
+      <Results results={results} projectPath={path} /> */}
     </div>
   );
 
   async function doThing() {
     const command = Command.create(
       "sg",
-      ["--pattern", input, "--rewrite", replace, "--json=compact"],
+      [
+        "--pattern",
+        input,
+        "--rewrite",
+        replace,
+        "--json=compact",
+        // "--context=3",
+      ],
       {
         cwd: path,
       },
@@ -74,8 +108,6 @@ export function ProjectView({ path }: Props) {
 
     const result = await command.execute();
     const rawResults = JSON.parse(result.stdout) as SGResult[];
-
-    console.log(rawResults);
 
     const fileResults = rawResults.reduce<Record<string, SGResult[]>>(
       (acc, result) => {
@@ -115,13 +147,21 @@ function Results({
   results: Record<string, SGResult[]>;
   projectPath: string;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const numFiles = Object.keys(results).length;
   const numResults = Object.values(results).flat().length;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className="flex flex-col gap-3 bg-red-300 flex-1 h-screen overflow-auto"
+      ref={scrollRef}
+    >
       <div className="text-sm text-gray-500">
-        {numFiles} files with {numResults} results
+        <span>
+          {numFiles} files with {numResults} results
+        </span>
+        <button onClick={() => replaceAll()}>Replace all</button>
       </div>
 
       {Object.entries(results).map(([file, results]) => (
@@ -139,28 +179,9 @@ function Results({
       ))}
     </div>
   );
-
-  function replaceAllInFile({
-    file,
-    results,
-  }: {
-    file: string;
-    results: SGResult[];
-  }) {
-    return invoke("replace_bytes_in_file", {
-      file,
-      projectPath,
-      bytesToReplace: results.map((result) => [
-        result.range.byteOffset.start,
-        result.range.byteOffset.end,
-        result.replacement,
-      ]),
-    })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
 }
+
+const DEFAULT_RULE = `
+rule:
+  pattern: React.useMemo($FN, $DEPS)
+`.trim();
