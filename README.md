@@ -1,10 +1,8 @@
 ## TODO:
 
-- [ ] Gate on `sg` being available
 - [ ] Language selector
+  - [ ] Use rust to get most likely file...
+- [ ] Make it not perform like ass, might need to drop to Rust for this...
+- [ ] Gate on `sg` being available
 - [ ] A diff view... need to style shiki
-- [ ] Diff actions:
-  - [ ] Replace all in all files
-  - [ ] Replace all in single file
-  - [ ] Replace single
 - [x] Group by file, order by line number
