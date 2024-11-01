@@ -127,7 +127,7 @@
 }
 
 pre.shiki {
-  @apply rounded-md overflow-x-auto py-2 text-sm;
+  @apply rounded-md overflow-x-auto py-2 text-xs;
 
   > code {
     @apply w-full flex flex-col;
