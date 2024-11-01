@@ -36,7 +36,12 @@ export async function getSGResults({
   const { stderr, stdout } = await command.execute();
 
   if (stderr) {
-    throw new Error(stderr);
+    const lastLine = stderr.split("\n").filter(Boolean).at(-1);
+    const lastLineStripped = lastLine
+      ?.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "")
+      .replace(/╰▻ /g, "");
+
+    throw new Error(lastLineStripped);
   }
 
   const rawResults = JSON.parse(stdout) as SGResult[];

@@ -5,35 +5,25 @@ import { queryClient } from "./queries";
 import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
 import { Suspense } from "react";
-/**
- * TODO: wrap in
- * @returns TODO:
- */
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="dark">
+      <Suspense fallback={<div>Loading...</div>}>
         <BootstrapActiveProject />
-      </div>
+      </Suspense>
     </QueryClientProvider>
   );
 }
 
 function BootstrapActiveProject() {
-  const { data: activeProjectPath, isLoading } = useActiveProjectPath();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const { data: activeProjectPath } = useActiveProjectPath();
 
   if (!activeProjectPath) {
     return <NoActiveProject />;
   }
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ProjectView path={activeProjectPath} />
-    </Suspense>
-  );
+
+  return <ProjectView path={activeProjectPath} key={activeProjectPath} />;
 }
 
 export default App;

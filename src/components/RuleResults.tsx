@@ -1,28 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { getSGResults, replaceBytesInFiles } from "../models/sg";
-import { invoke } from "@tauri-apps/api/core";
-import { CodeDiff } from "./CodeDiff";
 import { SGResult } from "../types";
-import { LanguageId } from "../models/languages";
+import { CodeDiff } from "./CodeDiff";
+
 type Props = {
-  path: string;
-  rule: string;
-  languageId: LanguageId;
+  results: [string, SGResult[]][] | undefined;
+  replaceBytes: (
+    replacements: Record<string, [number, number, string][]>,
+  ) => Promise<unknown>;
 };
 
-export function RuleResults({ path, rule, languageId }: Props) {
-  const { data, error } = useQuery({
-    queryKey: ["scan-results", rule],
-    queryFn: () => getSGResults({ path, rule, languageId }),
-    gcTime: 0,
-    retry: 0,
-  });
-
-  if (error) {
-    return <div className="bg-red-100">{error.message}</div>;
-  }
-
-  const results = data ?? [];
+export function RuleResults({ results: consumerResults, replaceBytes }: Props) {
+  const results = consumerResults ?? [];
   const numFiles = Object.keys(results).length;
   const numResults = Object.values(results).flat().length;
 
@@ -51,21 +38,19 @@ export function RuleResults({ path, rule, languageId }: Props) {
     </div>
   );
 
-  // TODO: move to models/sg.ts?
   function replaceAll() {
-    return invoke("replace_bytes_in_files", {
-      projectPath: path,
-      replacements: Object.fromEntries(
+    return replaceBytes(
+      Object.fromEntries(
         results.map(([file, results]) => [
           file,
           results.map((result) => [
             result.range.byteOffset.start,
             result.range.byteOffset.end,
-            result.replacement,
+            result.replacement!, // TODO: don't bang
           ]),
         ]),
       ),
-    });
+    );
   }
 
   function replaceAllInFile({
@@ -75,37 +60,12 @@ export function RuleResults({ path, rule, languageId }: Props) {
     file: string;
     results: SGResult[];
   }) {
-    return replaceBytesInFiles({
-      path,
-      replacements: {
-        [file]: results.map((result) => [
-          result.range.byteOffset.start,
-          result.range.byteOffset.end,
-          result.replacement!,
-        ]),
-      },
-    })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-    // return invoke("replace_bytes_in_files", {
-    //   projectPath: path,
-    //   replacements: {
-    //     [file]: results.map((result) => [
-    //       result.range.byteOffset.start,
-    //       result.range.byteOffset.end,
-    //       result.replacement,
-    //     ]),
-    //   },
-    // })
-    //   .then((res) => {
-    //     console.log(res);
-    //   })
-    //   .catch((err) => {
-    //     console.error(err);
-    //   });
+    return replaceBytes({
+      [file]: results.map((result) => [
+        result.range.byteOffset.start,
+        result.range.byteOffset.end,
+        result.replacement!, // TODO: don't bang
+      ]),
+    });
   }
 }
