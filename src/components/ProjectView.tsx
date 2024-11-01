@@ -10,12 +10,11 @@ import Editor from "@monaco-editor/react";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { homeDir } from "@tauri-apps/api/path";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
-import { getLastValue, storeLastValue, useStorePersistedState } from "../store";
-import { useDebouncedCallback } from "../utils/useDebouncedCallback";
-import { LanguageSelector } from "./LanguageSelector";
+import { useStorePersistedState } from "../store";
+import { useDebouncedCallback } from "../lib/useDebouncedCallback";
 import { RuleResults } from "./RuleResults";
 
 type Props = {
@@ -38,7 +37,6 @@ export function ProjectView({ path }: Props) {
     useCallback((ruleString: string | undefined) => {
       if (ruleString) {
         setInput(ruleString.trim());
-        storeLastValue(path, ruleString.trim()).catch(() => {});
       }
     }, []),
     500,
@@ -70,28 +68,6 @@ export function ProjectView({ path }: Props) {
 
       <div className="flex-1 h-full relative">
         <RuleResults path={path} rule={input} languageId={languageId} />
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="h-screen overflow-hidden flex flex-col">
-      <ProjectHeader path={path} />
-      <div className="flex flex-row flex-1">
-        <div className="flex-1 h-full overflow-auto relative">
-          <LanguageSelector languageId={languageId} onChange={setLanguageId} />
-          <Editor
-            height="100%"
-            language="yaml"
-            defaultValue={input}
-            options={{
-              minimap: { enabled: false },
-            }}
-            onChange={onChange}
-          />
-        </div>
-
-        <div className="flex-1 h-full relative"></div>
       </div>
     </div>
   );

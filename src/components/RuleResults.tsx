@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSGResults } from "../models/sg";
+import { getSGResults, replaceBytesInFiles } from "../models/sg";
 import { invoke } from "@tauri-apps/api/core";
 import { CodeDiff } from "./CodeDiff";
 import { SGResult } from "../types";
@@ -75,13 +75,13 @@ export function RuleResults({ path, rule, languageId }: Props) {
     file: string;
     results: SGResult[];
   }) {
-    return invoke("replace_bytes_in_files", {
-      projectPath: path,
+    return replaceBytesInFiles({
+      path,
       replacements: {
         [file]: results.map((result) => [
           result.range.byteOffset.start,
           result.range.byteOffset.end,
-          result.replacement,
+          result.replacement!,
         ]),
       },
     })
@@ -91,5 +91,21 @@ export function RuleResults({ path, rule, languageId }: Props) {
       .catch((err) => {
         console.error(err);
       });
+    // return invoke("replace_bytes_in_files", {
+    //   projectPath: path,
+    //   replacements: {
+    //     [file]: results.map((result) => [
+    //       result.range.byteOffset.start,
+    //       result.range.byteOffset.end,
+    //       result.replacement,
+    //     ]),
+    //   },
+    // })
+    //   .then((res) => {
+    //     console.log(res);
+    //   })
+    //   .catch((err) => {
+    //     console.error(err);
+    //   });
   }
 }

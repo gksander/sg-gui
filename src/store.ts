@@ -24,21 +24,6 @@ export async function setStoreValue<K extends keyof Store>(
   return store.set(key, value);
 }
 
-export async function storeLastValue(path: string, value: string) {
-  return store.set(`lastValue:${path}`, value);
-}
-
-export async function getLastValue(path: string): Promise<string | null> {
-  try {
-    const value = await store.get(`lastValue:${path}`);
-    console.log(value);
-
-    return value ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export function useStorePersistedState<T>({
   path,
   key,
