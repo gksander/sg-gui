@@ -127,7 +127,7 @@
 }
 
 pre.shiki {
-  @apply rounded-md overflow-x-auto py-2;
+  @apply rounded-md overflow-x-auto py-2 text-sm;
 
   > code {
     @apply w-full flex flex-col;
@@ -135,5 +135,18 @@ pre.shiki {
 
   .line {
     @apply min-w-full min-h-[1rem];
+  }
+
+  /* Diff indicators */
+  .line[data-diff-type="+"] {
+    @apply bg-green-200;
+  }
+  .line[data-diff-type="-"] {
+    @apply bg-red-200;
+  }
+
+  .line::before {
+    content: attr(data-line-no-before) " " attr(data-line-no-after) " "
+      attr(data-diff-type);
   }
 }
