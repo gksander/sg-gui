@@ -125,3 +125,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+pre.shiki {
+  @apply rounded-md overflow-x-auto py-2;
+
+  > code {
+    @apply w-full flex flex-col;
+  }
+
+  .line {
+    @apply min-w-full min-h-[1rem];
+  }
+}

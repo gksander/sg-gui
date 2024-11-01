@@ -13,18 +13,23 @@ export function RuleResults({ results: consumerResults, replaceBytes }: Props) {
   const numFiles = Object.keys(results).length;
   const numResults = Object.values(results).flat().length;
 
+  // TODO: pretty this up
+  if (numResults === 0) {
+    return <div>No results</div>;
+  }
+
   return (
-    <div className="absolute inset-0 overflow-auto p-4">
-      <div className="text-sm text-gray-500">
-        <span>
-          {numFiles} files with {numResults} results
+    <div className="absolute inset-0 overflow-auto">
+      <div className="flex justify-between items-center mb-4 px-6 py-3">
+        <span className="font-bold">
+          {numResults} matches in {numFiles} files
         </span>
         <button onClick={() => replaceAll()}>Replace all</button>
       </div>
 
       {results.map(([file, results]) => (
-        <div key={file} className="flex flex-col gap-2">
-          <div className="text-lg font-bold flex gap-3">
+        <div key={file} className="flex flex-col gap-3 mb-4 px-6 py-3">
+          <div className="font-medium flex justify-between items-center sticky top-0 bg-white">
             {file} ({results.length} results)
             <button onClick={() => replaceAllInFile({ file, results })}>
               Replace all

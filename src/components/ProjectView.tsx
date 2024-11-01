@@ -85,6 +85,7 @@ export function ProjectView({ path }: Props) {
             options={{
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
+              fontSize: 14,
             }}
             onChange={onChange}
           />

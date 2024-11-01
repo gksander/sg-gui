@@ -5,9 +5,11 @@ import { memo, useMemo } from "react";
 import { diffLines, createTwoFilesPatch } from "diff";
 import ReactDiffViewer from "react-diff-viewer";
 
+const THEME = "catppuccin-latte";
+
 const highlighter = await createHighlighter({
   langs: ["typescript"],
-  themes: ["ayu-dark"],
+  themes: [THEME],
 });
 
 type Props = {
@@ -28,20 +30,11 @@ export const CodeDiff = memo(({ change }: Props) => {
       change.replacement,
     );
 
-    // console.log(
-    //   createTwoFilesPatch(
-    //     "original.ts",
-    //     "replacement.ts",
-    //     change.text,
-    //     change.replacement,
-    //   ),
-    // );
-
-    const lines = diffLines(change.lines, replacementLines);
-
-    // console.log(lines);
-
-    return lines
+    return diffLines(change.lines, replacementLines, {
+      newlineIsToken: true,
+      ignoreWhitespace: false,
+      ignoreCase: false,
+    })
       .map((line) => {
         if (line.added) {
           return line.value.replace("\n", `// [!code ++]\n`);
@@ -54,6 +47,14 @@ export const CodeDiff = memo(({ change }: Props) => {
       })
       .join("");
   }, [change]);
+
+  // return (
+  //   <ReactDiffViewer
+  //     oldValue={change.lines}
+  //     newValue={change.lines.replace(change.text, change.replacement!)}
+  //     splitView={false}
+  //   />
+  // );
 
   // console.log(change.text);
   // console.log(change.replacement);
@@ -78,7 +79,7 @@ export const CodeDiff = memo(({ change }: Props) => {
           lang: "typescript",
           // themes: ["github-dark"],
           transformers: [transformerNotationDiff()],
-          theme: "ayu-dark",
+          theme: THEME,
         }),
       }}
     />
