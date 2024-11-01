@@ -55,8 +55,8 @@ export const CodeDiff = memo(({ change }: Props) => {
       .join("");
   }, [change]);
 
-  console.log(change.text);
-  console.log(change.replacement);
+  // console.log(change.text);
+  // console.log(change.replacement);
 
   // console.log(lines);
 

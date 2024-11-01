@@ -4,6 +4,7 @@ import { useActiveProjectPath } from "./models/projects";
 import { queryClient } from "./queries";
 import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
+import { Suspense } from "react";
 /**
  * TODO: wrap in
  * @returns TODO:
@@ -11,7 +12,9 @@ import { ProjectView } from "./components/ProjectView";
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BootstrapActiveProject />
+      <div className="dark">
+        <BootstrapActiveProject />
+      </div>
     </QueryClientProvider>
   );
 }
@@ -26,8 +29,11 @@ function BootstrapActiveProject() {
   if (!activeProjectPath) {
     return <NoActiveProject />;
   }
-
-  return <ProjectView path={activeProjectPath} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProjectView path={activeProjectPath} />
+    </Suspense>
+  );
 }
 
 export default App;
