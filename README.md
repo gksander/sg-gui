@@ -10,3 +10,4 @@
   - [ ] Ellispis if in thousands for line number
 - [ ] Style up scrollbars on code blocks...
 - [ ] Min size for window
+- [ ] WASM

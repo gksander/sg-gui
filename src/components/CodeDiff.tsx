@@ -1,8 +1,9 @@
+import { useInView } from "react-intersection-observer";
 import { transformerRemoveLineBreak } from "@shikijs/transformers";
 import { diffLines } from "diff";
 import { type Element, type Text } from "hast";
-import { memo } from "react";
-import { createHighlighter, ShikiTransformer } from "shiki";
+import { Fragment, memo, useEffect, useMemo, useState } from "react";
+import { codeToHtml, createHighlighter, ShikiTransformer } from "shiki";
 import { SGResult } from "../types";
 import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
@@ -24,21 +25,72 @@ type Props = {
 
 export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
   const isReplacement = !!change.replacement;
+  const [highlighted, setHighlighted] = useState("");
+
+  const [ref, isInView] = useInView();
+
+  useEffect(() => {
+    if (!isInView || highlighted) return;
+
+    codeToHtml(lines.join("\n"), {
+      lang: "typescript",
+      transformers: [
+        transformerRemoveLineBreak(),
+        LineDiffTransformer(isReplacement),
+      ],
+      theme: SHIKI_THEME,
+    })
+      .then(setHighlighted)
+      .catch(() => {});
+  }, [isInView, highlighted]);
+
+  const lines = useMemo(() => {
+    if (!isReplacement) {
+      let lineNo = change.range.start.line + 1;
+
+      return change.lines
+        .split("\n")
+        .map((text, index) => `${text}//[bl:${lineNo + index};al:;dt:]`);
+    }
+
+    // For diff'ing
+    let leftLineNo = change.range.start.line;
+    let rightLineNo = change.range.start.line;
+    const lineChanges = diffLines(
+      change.lines,
+      change.replacement
+        ? change.lines.replace(change.text, change.replacement)
+        : change.lines,
+    );
+
+    const diffedLines: string[] = [];
+
+    for (const change of lineChanges) {
+      const changedLines = change.value.replace(/\n$/, "").split("\n");
+
+      for (const changedLine of changedLines) {
+        if (change.added) {
+          rightLineNo++;
+          diffedLines.push(`${changedLine}//[bl:;al:${rightLineNo};dt:+]`);
+        } else if (change.removed) {
+          leftLineNo++;
+          diffedLines.push(`${changedLine}//[bl:${leftLineNo};al:;dt:-]`);
+        } else {
+          leftLineNo++;
+          rightLineNo++;
+          diffedLines.push(
+            `${changedLine}//[bl:${leftLineNo};al:${rightLineNo};dt: ]`,
+          );
+        }
+      }
+    }
+
+    return diffedLines;
+  }, [isReplacement, change]);
 
   return (
-    <div className="relative">
-      <span
-        dangerouslySetInnerHTML={{
-          __html: highlighter.codeToHtml(getLines(), {
-            lang: "typescript",
-            transformers: [
-              transformerRemoveLineBreak(),
-              LineDiffTransformer(isReplacement),
-            ],
-            theme: SHIKI_THEME,
-          }),
-        }}
-      />
+    <div className="relative" ref={ref}>
+      {getBody()}
 
       {isReplacement && (
         <Button
@@ -64,48 +116,25 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
     </div>
   );
 
-  function getLines() {
-    if (!isReplacement) {
-      let lineNo = change.range.start.line + 1;
-
-      return change.lines
-        .split("\n")
-        .map((text, index) => `${text}//[bl:${lineNo + index};al:;dt:]`)
-        .join("\n");
+  function getBody() {
+    if (isInView && highlighted) {
+      return <div dangerouslySetInnerHTML={{ __html: highlighted }} />;
     }
 
-    // For diff'ing
-    let leftLineNo = change.range.start.line;
-    let rightLineNo = change.range.start.line;
-    const lineChanges = diffLines(
-      change.lines,
-      change.replacement
-        ? change.lines.replace(change.text, change.replacement)
-        : change.lines,
+    return (
+      <pre className="shiki">
+        <code>
+          {lines.map((line, index) => (
+            <Fragment key={index}>
+              <div className="line-numbers"></div>
+              <div className="line" key={index}>
+                {line}
+              </div>
+            </Fragment>
+          ))}
+        </code>
+      </pre>
     );
-    const diffedLines: string[] = [];
-
-    for (const change of lineChanges) {
-      const changedLines = change.value.replace(/\n$/, "").split("\n");
-
-      for (const changedLine of changedLines) {
-        if (change.added) {
-          rightLineNo++;
-          diffedLines.push(`${changedLine}//[bl:;al:${rightLineNo};dt:+]`);
-        } else if (change.removed) {
-          leftLineNo++;
-          diffedLines.push(`${changedLine}//[bl:${leftLineNo};al:;dt:-]`);
-        } else {
-          leftLineNo++;
-          rightLineNo++;
-          diffedLines.push(
-            `${changedLine}//[bl:${leftLineNo};al:${rightLineNo};dt: ]`,
-          );
-        }
-      }
-    }
-
-    return diffedLines.join("\n");
   }
 });
 

@@ -53,7 +53,7 @@ export function RuleResults({
 
           {results.map((result) => (
             <CodeDiff
-              key={`${result.file}:${result.lines}`}
+              key={`${result.file}:${result.range.byteOffset.start}:${result.range.byteOffset.end}:${result.replacement}`}
               change={result}
               replaceBytes={replaceBytes}
             />

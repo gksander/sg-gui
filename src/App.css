@@ -131,6 +131,7 @@ pre.shiki {
   }
 
   > code {
+    font-family: "JetBrains Mono Variable", monospace;
     @apply grid grid-cols-[min-content_1fr] gap-x-4 items-center;
 
     /* Style up line numbers */
@@ -157,7 +158,7 @@ pre.shiki {
   code[data-is-replacement] {
     .line::before {
       content: attr(data-diff-type);
-      @apply w-1 select-none;
+      @apply w-1 mr-2 select-none;
     }
   }
 }
