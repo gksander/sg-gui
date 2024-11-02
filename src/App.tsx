@@ -1,4 +1,4 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useSuspenseQuery } from "@tanstack/react-query";
 import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
 import { useActiveProjectPath } from "./models/projects";
@@ -6,6 +6,7 @@ import { queryClient } from "./queries";
 import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
 import { Suspense } from "react";
+import { initMonacoWithShiki } from "@/lib/shiki";
 
 function App() {
   return (
@@ -19,6 +20,14 @@ function App() {
 
 function BootstrapActiveProject() {
   const { data: activeProjectPath } = useActiveProjectPath();
+
+  useSuspenseQuery({
+    queryKey: ["init-monaco"],
+    queryFn: async () => {
+      await initMonacoWithShiki();
+      return { ok: true };
+    },
+  });
 
   if (!activeProjectPath) {
     return <NoActiveProject />;

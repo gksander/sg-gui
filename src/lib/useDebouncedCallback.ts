@@ -4,7 +4,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
   callback: T,
   delay: number,
 ): T {
-  const timeoutRef = useRef<number>();
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   return ((...args: Parameters<T>) => {
     if (timeoutRef.current) {

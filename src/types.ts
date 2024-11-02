@@ -1,4 +1,5 @@
 export interface SGResult {
+  id: string;
   text: string;
   range: {
     byteOffset: {

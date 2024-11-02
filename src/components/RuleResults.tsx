@@ -1,7 +1,7 @@
 import { ReplaceButton } from "@/components/ReplaceButton";
+import { useMemo } from "react";
 import { SGResult } from "../types";
 import { CodeDiff } from "./CodeDiff";
-import { useMemo } from "react";
 
 type Props = {
   results: [string, SGResult[]][] | undefined;
@@ -57,7 +57,7 @@ export function RuleResults({
 
           {results.map((result) => (
             <CodeDiff
-              key={`${result.file}:${result.range.byteOffset.start}:${result.range.byteOffset.end}:${result.replacement}`}
+              key={result.id}
               change={result}
               replaceBytes={replaceBytes}
             />

@@ -19,7 +19,8 @@ import { useCallback } from "react";
 import { FaRegFolder } from "react-icons/fa";
 import { FaCircleExclamation } from "react-icons/fa6";
 
-import { initMonacoWithShiki, SHIKI_THEME } from "@/lib/shiki";
+import { Button } from "@/components/ui/button";
+import { SHIKI_THEME } from "@/lib/shiki";
 import { queryClient } from "@/queries";
 import { invoke } from "@tauri-apps/api/core";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
@@ -27,9 +28,6 @@ import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
-import { Button } from "@/components/ui/button";
-
-await initMonacoWithShiki();
 
 type Props = {
   path: string;
@@ -177,7 +175,7 @@ function StatusBar({ error }: { error?: Error | null }) {
   }
 
   return (
-    <div className="p-2 text-xs flex items-start gap-2 w-full shrink-0 bg-red-200">
+    <div className="p-2 text-xs flex items-start gap-2 w-full shrink-0 bg-red-950">
       <FaCircleExclamation className="w-3 h-3 shrink-0 mt-1" />
       <div className="flex-grow">{error.message}</div>
     </div>
