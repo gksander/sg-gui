@@ -7,7 +7,12 @@ import {
 } from "@/components/ui/select";
 import { getSGResults } from "@/models/sg";
 import Editor from "@monaco-editor/react";
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { homeDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useCallback } from "react";
@@ -53,6 +58,7 @@ export function ProjectView({ path }: Props) {
     queryFn: () => getSGResults({ path, rule: input, languageId }),
     gcTime: 0,
     retry: 0,
+    placeholderData: keepPreviousData,
   });
 
   /**

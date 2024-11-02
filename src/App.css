@@ -126,27 +126,42 @@
   }
 }
 
+/* 
+  Code styling TODO:
+  - [ ] Better diff colors
+  - [ ] Line wrapping?
+*/
 pre.shiki {
-  @apply rounded-md overflow-x-auto py-2 text-xs;
+  @apply rounded-md overflow-x-auto text-xs;
 
   > code {
-    @apply w-full flex flex-col;
+    @apply grid grid-cols-[min-content_1fr] gap-x-4 items-center;
+
+    /* Style up line numbers */
+    .line-numbers {
+      @apply flex select-none;
+      > * {
+        @apply w-[37.5px] flex-1 text-right;
+      }
+    }
   }
 
   .line {
-    @apply min-w-full min-h-[1rem];
+    @apply min-w-[unset] min-h-[1rem] py-0.5 px-1 h-[1.5rem];
   }
 
-  /* Diff indicators */
+  /* Diff indicators, need better colors */
   .line[data-diff-type="+"] {
-    @apply bg-green-200;
+    @apply bg-green-100;
   }
   .line[data-diff-type="-"] {
-    @apply bg-red-200;
+    @apply bg-red-100;
   }
 
-  .line::before {
-    content: attr(data-line-no-before) " " attr(data-line-no-after) " "
-      attr(data-diff-type);
+  code[data-is-replacement] {
+    .line::before {
+      content: attr(data-diff-type);
+      @apply w-1 select-none;
+    }
   }
 }
