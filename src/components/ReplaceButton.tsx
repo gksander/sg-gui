@@ -9,9 +9,14 @@ type Props = {
 
 export function ReplaceButton({ onClick, isLoading, multiple = false }: Props) {
   return (
-    <Button variant="ghost" onClick={onClick} disabled={isLoading}>
-      <VscReplaceAll className="mr-1" />
+    <Button
+      variant="ghost"
+      onClick={onClick}
+      disabled={isLoading}
+      className="text-xs"
+    >
       {multiple ? "Apply all" : "Apply"}
+      <VscReplaceAll className="ml-1" />
     </Button>
   );
 }

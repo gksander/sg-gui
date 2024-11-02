@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { ReplaceButton } from "@/components/ReplaceButton";
 import { SGResult } from "../types";
 import { CodeDiff } from "./CodeDiff";
-import { ReplaceButton } from "@/components/ReplaceButton";
 
 type Props = {
   results: [string, SGResult[]][] | undefined;
@@ -26,7 +25,7 @@ export function RuleResults({
   }
 
   return (
-    <div className="absolute inset-0 overflow-auto">
+    <div className="absolute inset-0 overflow-auto isolate">
       <div className="flex justify-between items-center mb-4 px-6 py-2">
         <span className="font-bold h-9 flex items-center">
           {numResults} matches in {numFiles} files
@@ -37,7 +36,7 @@ export function RuleResults({
 
       {results.map(([file, results]) => (
         <div key={file} className="flex flex-col gap-3 mb-4 px-6">
-          <div className="font-medium flex justify-between items-center sticky top-0 bg-background text-sm py-2">
+          <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
             <span className="h-9 flex items-center">
               {file}
               {results.length > 1 &&
@@ -53,7 +52,11 @@ export function RuleResults({
           </div>
 
           {results.map((result) => (
-            <CodeDiff key={`${result.file}:${result.lines}`} change={result} />
+            <CodeDiff
+              key={`${result.file}:${result.lines}`}
+              change={result}
+              replaceBytes={replaceBytes}
+            />
           ))}
         </div>
       ))}

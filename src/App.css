@@ -123,6 +123,13 @@
 pre.shiki {
   @apply rounded-md overflow-x-auto text-xs;
 
+  &::-webkit-scrollbar {
+    @apply h-1.5 bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-background/70 rounded-full;
+  }
+
   > code {
     @apply grid grid-cols-[min-content_1fr] gap-x-4 items-center;
 

@@ -5,7 +5,8 @@
 - [ ] Make it not perform like ass, might need to drop to Rust for this...
   - [ ] Also don't try to shiki more than like initial 20 code blocks...
 - [ ] Gate on `sg` being available
-- [ ] A diff view... need to style shiki
-  - [ ] Better styles (better color)
+- [x] A diff view... need to style shiki
+  - [x] Better styles (better color)
   - [ ] Ellispis if in thousands for line number
-- [ ] JB Mono font
+- [ ] Style up scrollbars on code blocks...
+- [ ] Min size for window

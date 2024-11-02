@@ -6,6 +6,8 @@ import { createHighlighter, ShikiTransformer } from "shiki";
 import { SGResult } from "../types";
 import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
+import { Button } from "@/components/ui/button";
+import { VscReplaceAll } from "react-icons/vsc";
 
 const highlighter = await createHighlighter({
   langs: ["typescript"],
@@ -14,24 +16,52 @@ const highlighter = await createHighlighter({
 
 type Props = {
   change: SGResult;
+  // TODO: extract out this type
+  replaceBytes: (
+    replacements: Record<string, [number, number, string][]>,
+  ) => Promise<unknown>;
 };
 
-export const CodeDiff = memo(({ change }: Props) => {
+export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
   const isReplacement = !!change.replacement;
 
   return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: highlighter.codeToHtml(getLines(), {
-          lang: "typescript",
-          transformers: [
-            transformerRemoveLineBreak(),
-            LineDiffTransformer(isReplacement),
-          ],
-          theme: SHIKI_THEME,
-        }),
-      }}
-    />
+    <div className="relative">
+      <span
+        dangerouslySetInnerHTML={{
+          __html: highlighter.codeToHtml(getLines(), {
+            lang: "typescript",
+            transformers: [
+              transformerRemoveLineBreak(),
+              LineDiffTransformer(isReplacement),
+            ],
+            theme: SHIKI_THEME,
+          }),
+        }}
+      />
+
+      {isReplacement && (
+        <Button
+          className="absolute right-2 bottom-2"
+          size="icon"
+          variant="ghost"
+          onClick={() =>
+            change.replacement &&
+            replaceBytes({
+              [change.file]: [
+                [
+                  change.range.byteOffset.start,
+                  change.range.byteOffset.end,
+                  change.replacement,
+                ],
+              ],
+            })
+          }
+        >
+          <VscReplaceAll />
+        </Button>
+      )}
+    </div>
   );
 
   function getLines() {
