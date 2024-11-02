@@ -110,8 +110,13 @@
     @apply border-border;
   }
   body {
-    font-family: "JetBrains Mono Variable", monospace;
     @apply dark bg-background text-foreground;
+  }
+
+  body,
+  html {
+    font-size: 16px;
+    font-family: "JetBrains Mono Variable", monospace;
   }
 }
 
@@ -127,7 +132,7 @@ pre.shiki {
     @apply h-1.5 bg-transparent;
   }
   &::-webkit-scrollbar-thumb {
-    @apply bg-background/70 rounded-full;
+    @apply bg-foreground/30 rounded-full;
   }
 
   > code {
@@ -160,5 +165,14 @@ pre.shiki {
       content: attr(data-diff-type);
       @apply w-1 mr-2 select-none;
     }
+  }
+}
+
+.pretty-scrollbar {
+  &::-webkit-scrollbar {
+    @apply w-2 bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-foreground/30 rounded-full;
   }
 }

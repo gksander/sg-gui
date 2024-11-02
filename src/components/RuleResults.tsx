@@ -1,6 +1,7 @@
 import { ReplaceButton } from "@/components/ReplaceButton";
 import { SGResult } from "../types";
 import { CodeDiff } from "./CodeDiff";
+import { useMemo } from "react";
 
 type Props = {
   results: [string, SGResult[]][] | undefined;
@@ -16,8 +17,11 @@ export function RuleResults({
   replaceBytes,
 }: Props) {
   const results = consumerResults ?? [];
-  const numFiles = Object.keys(results).length;
-  const numResults = Object.values(results).flat().length;
+  const numFiles = results.length;
+  const numResults = useMemo(
+    () => results.reduce((acc, [_, results]) => acc + results.length, 0),
+    [results],
+  );
 
   // TODO: pretty this up
   if (numResults === 0) {
@@ -25,7 +29,7 @@ export function RuleResults({
   }
 
   return (
-    <div className="absolute inset-0 overflow-auto isolate">
+    <div className="absolute inset-0 overflow-auto pretty-scrollbar isolate">
       <div className="flex justify-between items-center mb-4 px-6 py-2">
         <span className="font-bold h-9 flex items-center">
           {numResults} matches in {numFiles} files

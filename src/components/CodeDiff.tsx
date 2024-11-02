@@ -1,19 +1,14 @@
-import { useInView } from "react-intersection-observer";
-import { transformerRemoveLineBreak } from "@shikijs/transformers";
-import { diffLines } from "diff";
-import { type Element, type Text } from "hast";
-import { Fragment, memo, useEffect, useMemo, useState } from "react";
-import { codeToHtml, createHighlighter, ShikiTransformer } from "shiki";
-import { SGResult } from "../types";
+import { Button } from "@/components/ui/button";
 import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
-import { Button } from "@/components/ui/button";
+import { diffLines } from "diff";
+import { type ElementContent } from "hast";
+import { Fragment, memo, useEffect, useMemo, useState } from "react";
 import { VscReplaceAll } from "react-icons/vsc";
-
-const highlighter = await createHighlighter({
-  langs: ["typescript"],
-  themes: [SHIKI_THEME],
-});
+import { useInView } from "react-intersection-observer";
+import { codeToHast, hastToHtml } from "shiki";
+import invariant from "tiny-invariant";
+import { SGResult } from "../types";
 
 type Props = {
   change: SGResult;
@@ -29,28 +24,18 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
 
   const [ref, isInView] = useInView();
 
-  useEffect(() => {
-    if (!isInView || highlighted) return;
+  type DiffLine = { bl?: number; al?: number; dt?: string; value: string };
 
-    codeToHtml(lines.join("\n"), {
-      lang: "typescript",
-      transformers: [
-        transformerRemoveLineBreak(),
-        LineDiffTransformer(isReplacement),
-      ],
-      theme: SHIKI_THEME,
-    })
-      .then(setHighlighted)
-      .catch(() => {});
-  }, [isInView, highlighted]);
-
-  const lines = useMemo(() => {
+  /**
+   * Compute line diffs and decorate with information about before/after line numbers and whether it's an add or minus.
+   */
+  const lines = useMemo<DiffLine[]>(() => {
     if (!isReplacement) {
       let lineNo = change.range.start.line + 1;
 
       return change.lines
         .split("\n")
-        .map((text, index) => `${text}//[bl:${lineNo + index};al:;dt:]`);
+        .map((text, index) => ({ bl: lineNo + index, value: text }));
     }
 
     // For diff'ing
@@ -63,7 +48,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
         : change.lines,
     );
 
-    const diffedLines: string[] = [];
+    const diffedLines: DiffLine[] = [];
 
     for (const change of lineChanges) {
       const changedLines = change.value.replace(/\n$/, "").split("\n");
@@ -71,22 +56,100 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
       for (const changedLine of changedLines) {
         if (change.added) {
           rightLineNo++;
-          diffedLines.push(`${changedLine}//[bl:;al:${rightLineNo};dt:+]`);
+          diffedLines.push({ al: rightLineNo, dt: "+", value: changedLine });
         } else if (change.removed) {
           leftLineNo++;
-          diffedLines.push(`${changedLine}//[bl:${leftLineNo};al:;dt:-]`);
+          diffedLines.push({ bl: leftLineNo, dt: "-", value: changedLine });
         } else {
           leftLineNo++;
           rightLineNo++;
-          diffedLines.push(
-            `${changedLine}//[bl:${leftLineNo};al:${rightLineNo};dt: ]`,
-          );
+          diffedLines.push({
+            bl: leftLineNo,
+            al: rightLineNo,
+            value: changedLine,
+          });
         }
       }
     }
 
     return diffedLines;
   }, [isReplacement, change]);
+
+  /**
+   * When code comes into view, run it thru a code -> HAST -> HTML transformation.
+   * We use the line diff information from above to decorate the HAST with line numbers and diff types.
+   */
+  useEffect(() => {
+    if (!isInView || highlighted) return;
+
+    (async function () {
+      try {
+        const hast = await codeToHast(
+          lines.map(({ value }) => value).join("\n"),
+          {
+            lang: "typescript",
+            theme: SHIKI_THEME,
+          },
+        );
+
+        const pre = hast.children[0];
+        invariant(pre.type === "element");
+        const code = pre.children[0];
+        invariant(code.type === "element");
+
+        code.properties["data-is-replacement"] = isReplacement;
+
+        const children: ElementContent[] = code.children
+          .filter((el) => !(el.type === "text" && el.value === "\n"))
+          .flatMap((el, index) => {
+            const { bl, al, dt } = lines[index] ?? {};
+
+            if (el.type === "element") {
+              el.properties["data-diff-type"] = dt;
+            }
+
+            return [
+              {
+                type: "element",
+                tagName: "span",
+                properties: { className: "line-numbers" },
+                children: [
+                  {
+                    type: "element" as const,
+                    tagName: "span",
+                    properties: {},
+                    children: [
+                      {
+                        type: "text" as const,
+                        value: typeof bl === "number" ? String(bl) : "",
+                      },
+                    ],
+                  },
+                  isReplacement && {
+                    type: "element" as const,
+                    tagName: "span",
+                    properties: {},
+                    children: [
+                      {
+                        type: "text" as const,
+                        value: typeof al === "number" ? String(al) : "",
+                      },
+                    ],
+                  },
+                ].filter(isTruthy),
+              },
+              el,
+            ];
+          });
+
+        code.children = children;
+
+        setHighlighted(hastToHtml(hast));
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, [isInView, highlighted]);
 
   return (
     <div className="relative" ref={ref}>
@@ -122,13 +185,16 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
     }
 
     return (
-      <pre className="shiki">
-        <code>
-          {lines.map((line, index) => (
+      <pre className="shiki bg-[#2d353b] text-[#d3c6aa]">
+        <code data-is-replacement={isReplacement}>
+          {lines.map(({ bl, al, dt, value }, index) => (
             <Fragment key={index}>
-              <div className="line-numbers"></div>
-              <div className="line" key={index}>
-                {line}
+              <div className="line-numbers">
+                {<span>{bl}</span>}
+                {isReplacement && <span>{al}</span>}
+              </div>
+              <div className="line" key={index} data-diff-type={dt}>
+                {value}
               </div>
             </Fragment>
           ))}
@@ -136,78 +202,4 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
       </pre>
     );
   }
-});
-
-const LineDiffTransformer: (isReplacement: boolean) => ShikiTransformer = (
-  isReplacement,
-) => ({
-  code(node) {
-    node.properties["data-is-replacement"] = isReplacement;
-    node.children = node.children.flatMap((childNode) => {
-      const isLineNode =
-        childNode.type === "element" &&
-        childNode.properties["class"] === "line";
-
-      // We'll be careful and add in extra node just in case
-      if (!isLineNode) {
-        return [
-          {
-            type: "element",
-            tagName: "span",
-            properties: {
-              className: "line-numbers",
-            },
-            children: [],
-          },
-          childNode,
-        ];
-      }
-
-      const metaNode = (childNode.children.at(-1) as Element)?.children?.at(
-        0,
-      ) as Text;
-
-      const match = metaNode.value.match(
-        /(.*)\/\/\[bl:(\d*);al:(\d*);dt:(.*)\]/,
-      );
-      const [, lineContent, beforeLineNo, afterLineNo, diffType] = match ?? [];
-
-      if (!lineContent) {
-        childNode.children.pop();
-      } else {
-        metaNode.value = lineContent;
-      }
-
-      return [
-        {
-          type: "element",
-          tagName: "span",
-          properties: {
-            className: "line-numbers",
-          },
-          children: [
-            {
-              type: "element" as const,
-              tagName: "span",
-              properties: {},
-              children: [{ type: "text" as const, value: beforeLineNo }],
-            },
-            isReplacement && {
-              type: "element" as const,
-              tagName: "span",
-              properties: {},
-              children: [{ type: "text" as const, value: afterLineNo }],
-            },
-          ].filter(isTruthy),
-        },
-        {
-          ...childNode,
-          properties: {
-            ...childNode.properties,
-            "data-diff-type": diffType,
-          },
-        },
-      ];
-    });
-  },
 });
