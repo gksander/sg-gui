@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
 import { useActiveProjectPath } from "./models/projects";
 import { queryClient } from "./queries";

@@ -1,14 +1,21 @@
+import { Button } from "@/components/ui/button";
 import { SGResult } from "../types";
 import { CodeDiff } from "./CodeDiff";
+import { ReplaceButton } from "@/components/ReplaceButton";
 
 type Props = {
   results: [string, SGResult[]][] | undefined;
+  isReplacement: boolean;
   replaceBytes: (
     replacements: Record<string, [number, number, string][]>,
   ) => Promise<unknown>;
 };
 
-export function RuleResults({ results: consumerResults, replaceBytes }: Props) {
+export function RuleResults({
+  results: consumerResults,
+  isReplacement,
+  replaceBytes,
+}: Props) {
   const results = consumerResults ?? [];
   const numFiles = Object.keys(results).length;
   const numResults = Object.values(results).flat().length;
@@ -20,21 +27,31 @@ export function RuleResults({ results: consumerResults, replaceBytes }: Props) {
 
   return (
     <div className="absolute inset-0 overflow-auto">
-      <div className="flex justify-between items-center mb-4 px-6 py-3">
-        <span className="font-bold">
+      <div className="flex justify-between items-center mb-4 px-6 py-2">
+        <span className="font-bold h-9 flex items-center">
           {numResults} matches in {numFiles} files
         </span>
-        <button onClick={() => replaceAll()}>Replace all</button>
+
+        {isReplacement && <ReplaceButton onClick={replaceAll} multiple />}
       </div>
 
       {results.map(([file, results]) => (
-        <div key={file} className="flex flex-col gap-3 mb-4 px-6 py-3">
-          <div className="font-medium flex justify-between items-center sticky top-0 bg-white">
-            {file} ({results.length} results)
-            <button onClick={() => replaceAllInFile({ file, results })}>
-              Replace all
-            </button>
+        <div key={file} className="flex flex-col gap-3 mb-4 px-6">
+          <div className="font-medium flex justify-between items-center sticky top-0 bg-background text-sm py-2">
+            <span className="h-9 flex items-center">
+              {file}
+              {results.length > 1 &&
+                ` (${results.length} ${results.length === 1 ? "result" : "results"})`}
+            </span>
+
+            {isReplacement && (
+              <ReplaceButton
+                onClick={() => replaceAllInFile({ file, results })}
+                multiple={results.length > 1}
+              />
+            )}
           </div>
+
           {results.map((result) => (
             <CodeDiff key={`${result.file}:${result.lines}`} change={result} />
           ))}

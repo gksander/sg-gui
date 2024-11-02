@@ -19,13 +19,17 @@ import { useCallback } from "react";
 import { FaRegFolder } from "react-icons/fa";
 import { FaCircleExclamation } from "react-icons/fa6";
 
+import { initMonacoWithShiki, SHIKI_THEME } from "@/lib/shiki";
+import { queryClient } from "@/queries";
+import { invoke } from "@tauri-apps/api/core";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
 import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
-import { invoke } from "@tauri-apps/api/core";
-import { queryClient } from "@/queries";
+import { Button } from "@/components/ui/button";
+
+await initMonacoWithShiki();
 
 type Props = {
   path: string;
@@ -61,6 +65,8 @@ export function ProjectView({ path }: Props) {
     placeholderData: keepPreviousData,
   });
 
+  const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
+
   /**
    * TODO: could theoretically try to slice cache? not sure it's worth it... SG is pretty fuckin' fast
    */
@@ -77,7 +83,7 @@ export function ProjectView({ path }: Props) {
 
   return (
     <div className="h-screen overflow-hidden flex flex-row">
-      <div className="w-[450px] flex flex-col">
+      <div className="w-[500px] flex flex-col">
         <ProjectHeader
           path={path}
           languageId={languageId}
@@ -88,6 +94,7 @@ export function ProjectView({ path }: Props) {
             height="100%"
             language="yaml"
             defaultValue={input}
+            theme={SHIKI_THEME}
             options={{
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
@@ -101,7 +108,11 @@ export function ProjectView({ path }: Props) {
       </div>
 
       <div className="flex-1 h-full relative">
-        <RuleResults results={results} replaceBytes={replaceBytes} />
+        <RuleResults
+          results={results}
+          isReplacement={isReplacement}
+          replaceBytes={replaceBytes}
+        />
       </div>
     </div>
   );
@@ -124,13 +135,14 @@ function ProjectHeader({
 
   return (
     <div className="p-2 pr-0 border-b flex justify-between">
-      <button
+      <Button
         onClick={handleOpenProject}
-        className="flex items-center gap-2 text-sm font-medium py-1 px-2 hover:bg-gray-100 rounded-md transition-colors"
+        variant="ghost"
+        className="flex items-center gap-3 text-sm font-medium"
       >
         {pathRelativeToHome}
         <FaRegFolder className="w-4 h-4" />
-      </button>
+      </Button>
 
       <Select value={languageId} onValueChange={onChangeLanguageId}>
         <SelectTrigger className="w-[180px]">

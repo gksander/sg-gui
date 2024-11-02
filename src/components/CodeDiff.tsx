@@ -1,20 +1,15 @@
-import {
-  transformerNotationDiff,
-  transformerRemoveLineBreak,
-} from "@shikijs/transformers";
+import { transformerRemoveLineBreak } from "@shikijs/transformers";
 import { diffLines } from "diff";
 import { type Element, type Text } from "hast";
 import { memo } from "react";
 import { createHighlighter, ShikiTransformer } from "shiki";
 import { SGResult } from "../types";
 import { isTruthy } from "@/lib/isTruthy";
-
-// const THEME = "catppuccin-latte";
-const THEME = "one-light";
+import { SHIKI_THEME } from "@/lib/shiki";
 
 const highlighter = await createHighlighter({
   langs: ["typescript"],
-  themes: [THEME],
+  themes: [SHIKI_THEME],
 });
 
 type Props = {
@@ -33,7 +28,7 @@ export const CodeDiff = memo(({ change }: Props) => {
             transformerRemoveLineBreak(),
             LineDiffTransformer(isReplacement),
           ],
-          theme: THEME,
+          theme: SHIKI_THEME,
         }),
       }}
     />

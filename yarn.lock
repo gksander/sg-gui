@@ -310,6 +310,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.8.tgz#21a907684723bbbaa5f0974cf7730bd797eb8e62"
   integrity sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==
 
+"@fontsource-variable/jetbrains-mono@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/jetbrains-mono/-/jetbrains-mono-5.1.1.tgz#d45ecec375900a89b64b8c3e260b51ad848ef11c"
+  integrity sha512-V+1aRFRvuZ66PpO30s8l/2aADKzpV9VRsO3kSZE+rTMvi4vab3cUcPHMN2z+wAvjkYJO71Yf+g3/Y6pSMmQpVQ==
+
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/@isaacs/cliui/-/cliui-8.0.2.tgz#b37667b7bc181c168782259bab42474fbf52b550"
@@ -714,6 +719,15 @@
   resolved "https://registry.yarnpkg.com/@shikijs/engine-oniguruma/-/engine-oniguruma-1.22.2.tgz#b12a44e3faf486e19fbcf8952f4b56b9b9b8d9b8"
   integrity sha512-GIZPAGzQOy56mGvWMoZRPggn0dTlBf1gutV5TdceLCZlFNqWmuc7u+CzD0Gd9vQUTgLbrt0KLzz6FNprqYAxlA==
   dependencies:
+    "@shikijs/types" "1.22.2"
+    "@shikijs/vscode-textmate" "^9.3.0"
+
+"@shikijs/monaco@^1.22.2":
+  version "1.22.2"
+  resolved "https://registry.yarnpkg.com/@shikijs/monaco/-/monaco-1.22.2.tgz#28d9427e6775180a67c5202abf7481b40fd66bdb"
+  integrity sha512-B4uAlNLUC1C57PGbhYjKVfRwRuh1hmj0/dOZt0IbdH3xjkF/kA99fcXOe9ODtDX2W7s+hef9h4pYT2ZAAAhMwQ==
+  dependencies:
+    "@shikijs/core" "1.22.2"
     "@shikijs/types" "1.22.2"
     "@shikijs/vscode-textmate" "^9.3.0"
 

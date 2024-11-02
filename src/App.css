@@ -2,18 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.shiki {
-  .line {
-    @apply min-w-full;
-  }
-  .line.diff.remove {
-    @apply bg-red-200;
-  }
-  .line.diff.add {
-    @apply bg-green-200;
-  }
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -67,7 +55,7 @@
     --radius: 0.5rem;
   }
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 210 8% 15%;
 
     --foreground: 210 40% 98%;
 
@@ -122,7 +110,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    font-family: "JetBrains Mono Variable", monospace;
+    @apply dark bg-background text-foreground;
   }
 }
 
@@ -147,15 +136,15 @@ pre.shiki {
   }
 
   .line {
-    @apply min-w-[unset] min-h-[1rem] py-0.5 px-1 h-[1.5rem];
+    @apply min-h-[1rem] py-0.5 px-1 h-[1.5rem];
   }
 
   /* Diff indicators, need better colors */
   .line[data-diff-type="+"] {
-    @apply bg-green-100;
+    @apply bg-green-900/50;
   }
   .line[data-diff-type="-"] {
-    @apply bg-red-100;
+    @apply bg-red-900/50;
   }
 
   code[data-is-replacement] {
