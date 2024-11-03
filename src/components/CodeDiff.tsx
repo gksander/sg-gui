@@ -9,6 +9,7 @@ import { useInView } from "react-intersection-observer";
 import { codeToHast, hastToHtml } from "shiki";
 import invariant from "tiny-invariant";
 import { SGResult } from "../types";
+import { animate } from "framer-motion";
 
 type Props = {
   change: SGResult;
@@ -75,12 +76,17 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
     return diffedLines;
   }, [isReplacement, change]);
 
+  const [haveLinesChanged, setHaveLinesChanged] = useState(false);
+  useEffect(() => {
+    setHaveLinesChanged(true);
+  }, [lines]);
+
   /**
    * When code comes into view, run it thru a code -> HAST -> HTML transformation.
    * We use the line diff information from above to decorate the HAST with line numbers and diff types.
    */
   useEffect(() => {
-    if (!isInView || highlighted) return;
+    if (!isInView || (highlighted && !haveLinesChanged)) return;
 
     (async function () {
       try {
@@ -145,11 +151,12 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
         code.children = children;
 
         setHighlighted(hastToHtml(hast));
+        setHaveLinesChanged(false);
       } catch (err) {
         console.error(err);
       }
     })();
-  }, [isInView, highlighted]);
+  }, [isInView, highlighted, haveLinesChanged]);
 
   return (
     <div className="relative" ref={ref}>

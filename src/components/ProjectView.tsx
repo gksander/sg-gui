@@ -97,6 +97,8 @@ export function ProjectView({ path }: Props) {
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               fontSize: 14,
+              fontFamily: "JetBrains Mono Variable",
+              fontLigatures: true,
             }}
             onChange={onChange}
           />

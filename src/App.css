@@ -115,7 +115,7 @@
 
   body,
   html {
-    font-size: 16px;
+    font-size: 14px;
     font-family: "JetBrains Mono Variable", monospace;
   }
 }
@@ -126,7 +126,7 @@
   - [ ] Line wrapping?
 */
 pre.shiki {
-  @apply rounded-md overflow-x-auto text-xs;
+  @apply rounded-md overflow-x-auto text-sm;
 
   &::-webkit-scrollbar {
     @apply h-1.5 bg-transparent;

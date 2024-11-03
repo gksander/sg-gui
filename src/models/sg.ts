@@ -48,6 +48,8 @@ export async function getSGResults({
 
   const fileResults = rawResults.reduce<Record<string, SGResult[]>>(
     (acc, result) => {
+      result.id = `${result.file}:${result.range.byteOffset.start}:${result.range.byteOffset.end}`;
+
       if (!acc[result.file]) {
         acc[result.file] = [result];
         return acc;
