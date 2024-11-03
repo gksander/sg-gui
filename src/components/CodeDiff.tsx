@@ -14,9 +14,7 @@ import { animate } from "framer-motion";
 type Props = {
   change: SGResult;
   // TODO: extract out this type
-  replaceBytes: (
-    replacements: Record<string, [number, number, string][]>,
-  ) => Promise<unknown>;
+  replaceBytes: (replacements: Record<string, SGResult[]>) => Promise<unknown>;
 };
 
 export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
@@ -159,7 +157,11 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
   }, [isInView, highlighted, haveLinesChanged]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className="relative"
+      ref={ref}
+      style={{ viewTransitionName: `code-diff-${change.id}` }}
+    >
       {getBody()}
 
       {isReplacement && (
@@ -167,18 +169,13 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
           className="absolute right-2 bottom-2"
           size="icon"
           variant="ghost"
-          onClick={() =>
-            change.replacement &&
+          onClick={() => {
+            if (!change.replacement) return;
+
             replaceBytes({
-              [change.file]: [
-                [
-                  change.range.byteOffset.start,
-                  change.range.byteOffset.end,
-                  change.replacement,
-                ],
-              ],
-            })
-          }
+              [change.file]: [change],
+            });
+          }}
         >
           <VscReplaceAll />
         </Button>

@@ -6,9 +6,7 @@ import { CodeDiff } from "./CodeDiff";
 type Props = {
   results: [string, SGResult[]][] | undefined;
   isReplacement: boolean;
-  replaceBytes: (
-    replacements: Record<string, [number, number, string][]>,
-  ) => Promise<unknown>;
+  replaceBytes: (replacements: Record<string, SGResult[]>) => Promise<unknown>;
 };
 
 export function RuleResults({
@@ -39,48 +37,57 @@ export function RuleResults({
       </div>
 
       {results.map(([file, results]) => (
-        <div key={file} className="flex flex-col gap-3 mb-4 px-6">
-          <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
-            <span className="h-9 flex items-center">
-              {file}
-              {results.length > 1 &&
-                ` (${results.length} ${results.length === 1 ? "result" : "results"})`}
-            </span>
-
-            {isReplacement && (
-              <ReplaceButton
-                onClick={() => replaceAllInFile({ file, results })}
-                multiple={results.length > 1}
-              />
-            )}
-          </div>
-
-          {results.map((result) => (
-            <CodeDiff
-              key={result.id}
-              change={result}
-              replaceBytes={replaceBytes}
-            />
-          ))}
-        </div>
+        <FileResults
+          key={file}
+          file={file}
+          results={results}
+          isReplacement={isReplacement}
+          replaceBytes={replaceBytes}
+        />
       ))}
     </div>
   );
 
   function replaceAll() {
-    return replaceBytes(
-      Object.fromEntries(
-        results.map(([file, results]) => [
-          file,
-          results.map((result) => [
-            result.range.byteOffset.start,
-            result.range.byteOffset.end,
-            result.replacement!, // TODO: don't bang
-          ]),
-        ]),
-      ),
-    );
+    return replaceBytes(Object.fromEntries(results));
   }
+}
+
+function FileResults({
+  file,
+  results,
+  isReplacement,
+  replaceBytes,
+}: { file: string; results: SGResult[] } & Pick<
+  Props,
+  "isReplacement" | "replaceBytes"
+>) {
+  return (
+    <div
+      key={file}
+      className="flex flex-col gap-3 mb-4 px-6"
+      style={{ viewTransitionName: `file-results-${file}` }}
+    >
+      <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
+        <span className="h-9 flex items-center">
+          {file}
+          {results.length > 1 &&
+            ` (${results.length} ${results.length === 1 ? "result" : "results"})`}
+        </span>
+
+        {isReplacement && (
+          <ReplaceButton
+            onClick={() => replaceAllInFile({ file, results })}
+            multiple={results.length > 1}
+          />
+        )}
+      </div>
+
+      {results.map((result) => (
+        <CodeDiff key={result.id} change={result} replaceBytes={replaceBytes} />
+      ))}
+    </div>
+  );
 
   function replaceAllInFile({
     file,
@@ -89,12 +96,10 @@ export function RuleResults({
     file: string;
     results: SGResult[];
   }) {
-    return replaceBytes({
-      [file]: results.map((result) => [
-        result.range.byteOffset.start,
-        result.range.byteOffset.end,
-        result.replacement!, // TODO: don't bang
-      ]),
+    if (!isReplacement) return;
+
+    replaceBytes({
+      [file]: results,
     });
   }
 }

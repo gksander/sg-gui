@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-query";
 import { homeDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { FaRegFolder } from "react-icons/fa";
 import { FaCircleExclamation } from "react-icons/fa6";
 
@@ -28,6 +28,7 @@ import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
+import { SGResult } from "@/types";
 
 type Props = {
   path: string;
@@ -54,9 +55,13 @@ export function ProjectView({ path }: Props) {
     500,
   );
 
+  const queryKey = useMemo(
+    () => ["scan-results", languageId, input],
+    [languageId, input],
+  );
+
   const { data: results, error: scanError } = useQuery({
-    // TODO: extract out
-    queryKey: ["scan-results", languageId, input],
+    queryKey: queryKey,
     queryFn: () => getSGResults({ path, rule: input, languageId }),
     gcTime: 0,
     retry: 0,
@@ -69,14 +74,28 @@ export function ProjectView({ path }: Props) {
    * TODO: could theoretically try to slice cache? not sure it's worth it... SG is pretty fuckin' fast
    */
   const { mutateAsync: replaceBytes } = useMutation({
-    mutationFn: (replacements: Record<string, [number, number, string][]>) =>
-      invoke("replace_bytes_in_files", {
+    mutationFn: (replacements: Record<string, SGResult[]>) => {
+      return invoke("replace_bytes_in_files", {
         projectPath: path,
-        replacements,
-      }),
+        replacements: Object.fromEntries(
+          Object.entries(replacements).map(([file, results]) => [
+            file,
+            results.map((result) => [
+              result.range.byteOffset.start,
+              result.range.byteOffset.end,
+              result.replacement!,
+            ]),
+          ]),
+        ),
+      });
+    },
+
+    onMutate: (replacements) => {
+      console.log(replacements);
+    },
 
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["scan-results"] }),
+      queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
   });
 
   return (
