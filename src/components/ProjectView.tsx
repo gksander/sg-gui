@@ -73,7 +73,7 @@ export function ProjectView({ path }: Props) {
   /**
    * TODO: could theoretically try to slice cache? not sure it's worth it... SG is pretty fuckin' fast
    */
-  const { mutateAsync: replaceBytes } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: (replacements: Record<string, SGResult[]>) => {
       return invoke("replace_bytes_in_files", {
         projectPath: path,
@@ -91,12 +91,48 @@ export function ProjectView({ path }: Props) {
     },
 
     onMutate: (replacements) => {
-      console.log(replacements);
+      queryClient.setQueryData<Awaited<ReturnType<typeof getSGResults>>>(
+        queryKey,
+        (old) => {
+          if (!old) {
+            return;
+          }
+
+          const newResultsByFile = Object.fromEntries(structuredClone(old));
+
+          // Loop through each file of replacements hash and update existing cache based on presence.
+          for (const [file, results] of Object.entries(replacements)) {
+            const existingResults = newResultsByFile[file];
+
+            const newResults = existingResults.filter(
+              (result) => !results.some((r) => r.id === result.id),
+            );
+
+            if (newResults.length === 0) {
+              delete newResultsByFile[file];
+            } else {
+              newResultsByFile[file] = newResults;
+            }
+          }
+
+          return Object.entries(newResultsByFile);
+        },
+      );
     },
 
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
   });
+
+  /**
+   * Wrapped in view transition to enable smooth UI updates.
+   */
+  const replaceBytes = useCallback(
+    (replacements: Record<string, SGResult[]>) => {
+      document.startViewTransition(() => mutate(replacements));
+    },
+    [mutate],
+  );
 
   return (
     <div className="h-screen overflow-hidden flex flex-row">
