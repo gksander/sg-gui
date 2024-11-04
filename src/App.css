@@ -120,9 +120,33 @@
   }
 }
 
+::view-transition-old(exiting) {
+  animation-name: exiting;
+  animation-duration: 200ms;
+  animation-timing-function: ease-in-out;
+  z-index: -1;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-delay: 50ms;
+  animation-duration: 300ms; /* Skip the cross-fade animation, resize instantly */
+  animation-timing-function: cubic-bezier(1, 0.025, 0.97, 0.36);
+}
+
+@keyframes exiting {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(300px);
+  }
+}
+
 /* 
   Code styling TODO:
-  - [ ] Better diff colors
   - [ ] Line wrapping?
 */
 pre.shiki {

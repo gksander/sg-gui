@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { VscReplaceAll } from "react-icons/vsc";
 
 type Props = {
-  onClick: () => void;
+  onClick: (evt: React.MouseEvent<HTMLButtonElement>) => void;
   multiple?: boolean;
   isLoading?: boolean;
 };

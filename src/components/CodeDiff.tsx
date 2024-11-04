@@ -20,6 +20,7 @@ type Props = {
 export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
   const isReplacement = !!change.replacement;
   const [highlighted, setHighlighted] = useState("");
+  const skipHighlighting = change.lines.length > 2000;
 
   const [ref, isInView] = useInView();
 
@@ -84,7 +85,8 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
    * We use the line diff information from above to decorate the HAST with line numbers and diff types.
    */
   useEffect(() => {
-    if (!isInView || (highlighted && !haveLinesChanged)) return;
+    if (!isInView || skipHighlighting || (highlighted && !haveLinesChanged))
+      return;
 
     (async function () {
       try {
@@ -158,7 +160,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
 
   return (
     <div
-      className="relative"
+      className="relative exiting-element"
       ref={ref}
       style={{ viewTransitionName: `code-diff-${change.id}` }}
     >
@@ -169,8 +171,14 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
           className="absolute right-2 bottom-2"
           size="icon"
           variant="ghost"
-          onClick={() => {
+          onClick={(evt) => {
             if (!change.replacement) return;
+
+            const exitingElement =
+              evt.currentTarget.closest(".exiting-element");
+            if (exitingElement instanceof HTMLElement) {
+              exitingElement.style.viewTransitionName = "exiting";
+            }
 
             replaceBytes({
               [change.file]: [change],
@@ -184,7 +192,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
   );
 
   function getBody() {
-    if (isInView && highlighted) {
+    if (isInView && highlighted && !skipHighlighting) {
       return <div dangerouslySetInnerHTML={{ __html: highlighted }} />;
     }
 

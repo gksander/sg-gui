@@ -26,6 +26,8 @@ export function RuleResults({
     return <div>No results</div>;
   }
 
+  // TODO: need to infinite scroll this... rendering all the shit at once ain't great.
+
   return (
     <div className="absolute inset-0 overflow-auto pretty-scrollbar isolate">
       <div className="flex justify-between items-center mb-4 px-6 py-2">
@@ -65,7 +67,7 @@ function FileResults({
   return (
     <div
       key={file}
-      className="flex flex-col gap-3 mb-4 px-6"
+      className="flex flex-col gap-3 mb-4 px-6 exiting-element"
       style={{ viewTransitionName: `file-results-${file}` }}
     >
       <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
@@ -77,7 +79,15 @@ function FileResults({
 
         {isReplacement && (
           <ReplaceButton
-            onClick={() => replaceAllInFile({ file, results })}
+            onClick={(evt) => {
+              const exitingElement =
+                evt.currentTarget.closest(".exiting-element");
+              if (exitingElement instanceof HTMLElement) {
+                exitingElement.style.viewTransitionName = "exiting";
+              }
+
+              replaceAllInFile({ file, results });
+            }}
             multiple={results.length > 1}
           />
         )}
