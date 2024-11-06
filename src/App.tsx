@@ -10,11 +10,16 @@ import { initMonacoWithShiki } from "@/lib/shiki";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<div>Loading...</div>}>
-        <BootstrapActiveProject />
-      </Suspense>
-    </QueryClientProvider>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="h-8 bg-transparent select-none" data-tauri-drag-region />
+      <div className="flex-1 overflow-hidden">
+        <QueryClientProvider client={queryClient}>
+          <Suspense fallback={<div>Loading...</div>}>
+            <BootstrapActiveProject />
+          </Suspense>
+        </QueryClientProvider>
+      </div>
+    </div>
   );
 }
 

@@ -21,13 +21,7 @@ export async function getSGResults({
 
   const command = Command.create(
     "sg",
-    [
-      "scan",
-      "--inline-rules",
-      JSON.stringify(ruleJson),
-      "--json=compact",
-      "--context=3",
-    ],
+    ["scan", "--inline-rules", JSON.stringify(ruleJson), "--json=compact"],
     {
       cwd: path,
     },
@@ -36,6 +30,7 @@ export async function getSGResults({
   const { stderr, stdout } = await command.execute();
 
   if (stderr) {
+    console.error(stderr);
     const lastLine = stderr.split("\n").filter(Boolean).at(-1);
     const lastLineStripped = lastLine
       ?.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "")

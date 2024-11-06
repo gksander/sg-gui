@@ -9,15 +9,15 @@ import { useInView } from "react-intersection-observer";
 import { codeToHast, hastToHtml } from "shiki";
 import invariant from "tiny-invariant";
 import { SGResult } from "../types";
-import { animate } from "framer-motion";
+import { LanguageId, LANGUAGES } from "@/models/languages";
 
 type Props = {
   change: SGResult;
-  // TODO: extract out this type
   replaceBytes: (replacements: Record<string, SGResult[]>) => Promise<unknown>;
+  languageId: LanguageId;
 };
 
-export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
+export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
   const isReplacement = !!change.replacement;
   const [highlighted, setHighlighted] = useState("");
   const skipHighlighting = change.lines.length > 2000;
@@ -84,6 +84,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
    * When code comes into view, run it thru a code -> HAST -> HTML transformation.
    * We use the line diff information from above to decorate the HAST with line numbers and diff types.
    */
+  const language = LANGUAGES[languageId]?.shikiId;
   useEffect(() => {
     if (!isInView || skipHighlighting || (highlighted && !haveLinesChanged))
       return;
@@ -93,7 +94,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
         const hast = await codeToHast(
           lines.map(({ value }) => value).join("\n"),
           {
-            lang: "typescript",
+            lang: language,
             theme: SHIKI_THEME,
           },
         );
@@ -156,7 +157,7 @@ export const CodeDiff = memo(({ change, replaceBytes }: Props) => {
         console.error(err);
       }
     })();
-  }, [isInView, highlighted, haveLinesChanged]);
+  }, [isInView, highlighted, haveLinesChanged, language]);
 
   return (
     <div

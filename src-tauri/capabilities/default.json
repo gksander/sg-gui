@@ -11,6 +11,8 @@
     "shell:allow-execute",
     "store:default",
     "dialog:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
     {
       "identifier": "shell:allow-execute",
       "allow": [

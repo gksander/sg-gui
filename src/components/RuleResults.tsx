@@ -2,17 +2,20 @@ import { ReplaceButton } from "@/components/ReplaceButton";
 import { useMemo } from "react";
 import { SGResult } from "../types";
 import { CodeDiff } from "./CodeDiff";
+import { LanguageId } from "@/models/languages";
 
 type Props = {
   results: [string, SGResult[]][] | undefined;
   isReplacement: boolean;
-  replaceBytes: (replacements: Record<string, SGResult[]>) => Promise<unknown>;
+  replaceBytes: (replacements: Record<string, SGResult[]>) => void;
+  languageId: LanguageId;
 };
 
 export function RuleResults({
   results: consumerResults,
   isReplacement,
   replaceBytes,
+  languageId,
 }: Props) {
   const results = consumerResults ?? [];
   const numFiles = results.length;
@@ -23,7 +26,11 @@ export function RuleResults({
 
   // TODO: pretty this up
   if (numResults === 0) {
-    return <div>No results</div>;
+    return (
+      <div className="h-9 my-2 px-6 text-lg font-medium flex items-center">
+        No results
+      </div>
+    );
   }
 
   // TODO: need to infinite scroll this... rendering all the shit at once ain't great.
@@ -45,6 +52,7 @@ export function RuleResults({
           results={results}
           isReplacement={isReplacement}
           replaceBytes={replaceBytes}
+          languageId={languageId}
         />
       ))}
     </div>
@@ -60,14 +68,15 @@ function FileResults({
   results,
   isReplacement,
   replaceBytes,
+  languageId,
 }: { file: string; results: SGResult[] } & Pick<
   Props,
-  "isReplacement" | "replaceBytes"
+  "isReplacement" | "replaceBytes" | "languageId"
 >) {
   return (
     <div
       key={file}
-      className="flex flex-col gap-3 mb-4 px-6 exiting-element"
+      className="flex flex-col gap-2 mb-4 px-6 exiting-element"
       style={{ viewTransitionName: `file-results-${file}` }}
     >
       <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
@@ -93,9 +102,16 @@ function FileResults({
         )}
       </div>
 
-      {results.map((result) => (
-        <CodeDiff key={result.id} change={result} replaceBytes={replaceBytes} />
-      ))}
+      <div className="flex flex-col gap-4">
+        {results.map((result) => (
+          <CodeDiff
+            key={result.id}
+            change={result}
+            replaceBytes={replaceBytes}
+            languageId={languageId}
+          />
+        ))}
+      </div>
     </div>
   );
 

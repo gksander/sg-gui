@@ -135,7 +135,7 @@ export function ProjectView({ path }: Props) {
   );
 
   return (
-    <div className="h-screen overflow-hidden flex flex-row">
+    <div className="h-full overflow-hidden flex flex-row">
       <div className="w-[500px] flex flex-col">
         <ProjectHeader
           path={path}
@@ -167,6 +167,7 @@ export function ProjectView({ path }: Props) {
           results={results}
           isReplacement={isReplacement}
           replaceBytes={replaceBytes}
+          languageId={languageId}
         />
       </div>
     </div>
