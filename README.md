@@ -1,3 +1,13 @@
+# SG GUI
+
+This repo is still in early days, but its goal is to provide a desktop GUI on top of [the amazing ast-grep](https://ast-grep.github.io/).
+
+![Screenshot](./docs/img/screenshot.png)
+
+It aims to expose as much of the `sg scan` functionality from AST-GREP as possible but display results in a beautiful web GUI that's easy to use and allow for easy experimenation with rewrites (that can be applied one "chunk" at a time).
+
+This project started as an experiment for me to learn more about Tauri and Rust, so don't expect perfection here.
+
 ## TODO:
 
 - [ ] Perf improvements:

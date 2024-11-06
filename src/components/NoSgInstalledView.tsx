@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { queryClient } from "@/lib/queryClient";
+import { invalidateSgCheck } from "@/lib/models/sgCheck";
 
 /**
  * This is ugly as shit, but does the job (roughly).
@@ -21,13 +21,7 @@ export function NoSgInstalledView() {
       </div>
 
       <div>
-        <Button
-          onClick={() =>
-            queryClient.invalidateQueries({ queryKey: ["check-sg-installed"] })
-          }
-        >
-          Check again
-        </Button>
+        <Button onClick={invalidateSgCheck}>Check again</Button>
       </div>
     </div>
   );
