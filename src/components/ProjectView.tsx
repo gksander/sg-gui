@@ -74,9 +74,6 @@ export function ProjectView({ path }: Props) {
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
-  /**
-   * TODO: could theoretically try to slice cache? not sure it's worth it... SG is pretty fuckin' fast
-   */
   const { mutate } = useMutation({
     mutationFn: (replacements: Record<string, SgGuiResultItem[]>) => {
       return invoke("replace_bytes_in_files", {

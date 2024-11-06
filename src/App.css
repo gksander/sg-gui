@@ -150,7 +150,7 @@
   - [ ] Line wrapping?
 */
 pre.shiki {
-  @apply rounded-md overflow-x-auto overflow-y-hidden;
+  @apply rounded-md overflow-x-auto overflow-y-hidden text-[0.9rem];
 
   &::-webkit-scrollbar {
     @apply h-1.5 bg-transparent;
@@ -173,7 +173,7 @@ pre.shiki {
   }
 
   .line {
-    @apply min-h-[1rem] py-0.5 px-1;
+    @apply px-1 leading-[2rem];
   }
 
   /* Diff indicators, need better colors */

@@ -3,7 +3,7 @@ import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
 import { LanguageId, LANGUAGES } from "@/models/languages";
 import { type ElementContent } from "hast";
-import { Fragment, memo, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { VscReplaceAll } from "react-icons/vsc";
 import { useInView } from "react-intersection-observer";
 import { codeToHast, hastToHtml } from "shiki";
@@ -12,9 +12,7 @@ import { SgGuiResultItem } from "../types";
 
 type Props = {
   change: SgGuiResultItem;
-  replaceBytes: (
-    replacements: Record<string, SgGuiResultItem[]>,
-  ) => Promise<unknown>;
+  replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
 };
 
@@ -146,21 +144,10 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
     }
 
     return (
-      <pre className="shiki bg-[#2d353b] text-[#d3c6aa]">
-        <code data-is-replacement={isReplacement}>
-          {change.formattedLines.map(({ bln, aln, sign, val }, index) => (
-            <Fragment key={index}>
-              <div className="line-numbers">
-                {<span>{bln}</span>}
-                {isReplacement && <span>{aln}</span>}
-              </div>
-              <div className="line" key={index} data-diff-type={sign}>
-                {val}
-              </div>
-            </Fragment>
-          ))}
-        </code>
-      </pre>
+      <pre
+        className="shiki bg-[#2d353b]"
+        style={{ height: `${change.formattedLines.length * 2}rem` }}
+      />
     );
   }
 });
