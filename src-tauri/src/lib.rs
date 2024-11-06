@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use similar::{ChangeTag, TextDiff};
 use std::collections::HashMap;
-use std::path::Path;
 use std::process::Command;
+mod replace_bytes;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -12,7 +12,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             exec_sg_query,
-            replace_bytes_in_files
+            replace_bytes::replace_bytes_in_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -165,42 +165,6 @@ fn exec_sg_query(
     file_results_vec.sort_by(|a, b| a.0.cmp(&b.0));
 
     Ok(file_results_vec)
-}
-
-/**
- * Replaces bytes in files.
- */
-#[tauri::command]
-fn replace_bytes_in_files(
-    project_path: &str,
-    replacements: std::collections::HashMap<&str, Vec<(u32, u32, &str)>>,
-) -> Result<(), String> {
-    for (file, bytes_to_replace) in replacements {
-        let file_path = Path::new(project_path).join(file);
-        let file_bytes = std::fs::read(&file_path).map_err(|e| e.to_string())?;
-
-        let mut new_bytes = file_bytes.clone();
-        let mut src_residual = 0;
-        let mut dst_residual = 0;
-
-        for (byte_offset_start, byte_offset_end, replacement) in bytes_to_replace {
-            let start = byte_offset_start + dst_residual - src_residual;
-            let end = byte_offset_end + dst_residual - src_residual;
-
-            let replacement_bytes = replacement.as_bytes();
-            new_bytes.splice(
-                (start) as usize..(end) as usize,
-                replacement_bytes.iter().cloned(),
-            );
-
-            src_residual += byte_offset_end - byte_offset_start;
-            dst_residual += replacement_bytes.len() as u32;
-        }
-
-        std::fs::write(&file_path, new_bytes).map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
 }
 
 /**

@@ -19,10 +19,10 @@ import { SgGuiResultItem } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { createPortal } from "react-dom";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
-import { LanguageId, LANGUAGES } from "../models/languages";
-import { setActiveProjectPath } from "../models/projects";
+import { LanguageId, LANGUAGES } from "../lib/languages";
+import { setActiveProjectPath } from "../lib/projects";
 import { useStorePersistedState } from "../store";
-import { RuleResults } from "./RuleResults";
+import { ResultPane } from "./ResultPane";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 type Props = {
@@ -147,7 +147,7 @@ export function ProjectView({ path, homedir }: Props) {
     <Fragment>
       <div className="h-full overflow-hidden flex flex-row">
         <div className="w-[500px] flex flex-col">
-          <LanguageAndGlobalInput
+          <LanguageAndGlobsInput
             languageId={languageId}
             onChangeLanguageId={setLanguageId}
             globs={globs}
@@ -172,7 +172,7 @@ export function ProjectView({ path, homedir }: Props) {
         </div>
 
         <div className="flex-1 h-full relative">
-          <RuleResults
+          <ResultPane
             results={results}
             isReplacement={isReplacement}
             replaceBytes={replaceBytes}
@@ -218,7 +218,7 @@ export function ProjectView({ path, homedir }: Props) {
   }
 }
 
-function LanguageAndGlobalInput({
+function LanguageAndGlobsInput({
   languageId,
   onChangeLanguageId,
   globs,
@@ -230,7 +230,7 @@ function LanguageAndGlobalInput({
   onChangeGlobs: (globs: string) => void;
 }) {
   return (
-    <div className="p-3 pr-0 border-b flex justify-between gap-2">
+    <div className="p-3 pr-0 border-b flex justify-between gap-4">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="language">Language</Label>
         <Select value={languageId} onValueChange={onChangeLanguageId}>
@@ -258,17 +258,6 @@ function LanguageAndGlobalInput({
       </div>
     </div>
   );
-
-  async function handleOpenProject() {
-    const selected = await open({
-      directory: true,
-      multiple: false,
-    });
-
-    if (selected) {
-      setActiveProjectPath(selected);
-    }
-  }
 }
 
 const DEFAULT_RULE = `

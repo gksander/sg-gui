@@ -98,12 +98,8 @@
   }
 }
 
-/* 
-  Code styling TODO:
-  - [ ] Line wrapping?
-*/
 pre.shiki {
-  @apply rounded-md overflow-x-auto overflow-y-hidden text-[0.8rem];
+  @apply rounded-md overflow-x-auto overflow-y-hidden text-[0.9rem];
 
   &::-webkit-scrollbar {
     @apply h-1.5 bg-transparent;

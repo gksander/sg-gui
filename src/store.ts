@@ -5,8 +5,6 @@ import { useCallback, useState } from "react";
 
 const store = new LazyStore("store.json", { autoSave: true });
 
-// TODO: sg location
-
 type Store = {
   activeProjectPath?: string | null;
 };

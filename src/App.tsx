@@ -1,17 +1,13 @@
-import {
-  QueryClientProvider,
-  useSuspenseQueries,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { initMonacoWithShiki } from "@/lib/shiki";
 import "@fontsource-variable/jetbrains-mono";
+import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
+import { homeDir } from "@tauri-apps/api/path";
+import { Suspense } from "react";
 import "./App.css";
-import { useActiveProjectPath } from "./models/projects";
-import { queryClient } from "./queries";
 import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
-import { Suspense } from "react";
-import { initMonacoWithShiki } from "@/lib/shiki";
-import { homeDir } from "@tauri-apps/api/path";
+import { useActiveProjectPath } from "./lib/projects";
+import { queryClient } from "./queries";
 
 function App() {
   return (

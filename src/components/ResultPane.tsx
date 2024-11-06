@@ -1,8 +1,8 @@
 import { ReplaceButton } from "@/components/ReplaceButton";
 import { PropsWithChildren, useMemo } from "react";
 import { SgGuiResultItem } from "../types";
-import { CodeDiff } from "./CodeDiff";
-import { LanguageId } from "@/models/languages";
+import { CodeSnippet } from "./CodeSnippet";
+import { LanguageId } from "@/lib/languages";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FaCircleExclamation } from "react-icons/fa6";
 
@@ -14,7 +14,7 @@ type Props = {
   error?: string | null;
 };
 
-export function RuleResults({
+export function ResultPane({
   results: consumerResults,
   isReplacement,
   replaceBytes,
@@ -40,7 +40,7 @@ export function RuleResults({
 
   return (
     <div className="absolute inset-0 overflow-auto pretty-scrollbar isolate">
-      <div className="flex justify-between items-center mb-4 px-6 py-2">
+      <div className="flex justify-between items-center mb-4 px-6">
         <span className="font-bold h-9 flex items-center">
           {numResults} matches in {numFiles} files
         </span>
@@ -82,7 +82,7 @@ function FileResults({
       className="flex flex-col gap-2 mb-4 px-6 exiting-element"
       style={{ viewTransitionName: `file-results-${file}` }}
     >
-      <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm py-2">
+      <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm">
         <span className="h-9 flex items-center">
           {file}
           {results.length > 1 &&
@@ -107,7 +107,7 @@ function FileResults({
 
       <div className="flex flex-col gap-4">
         {results.map((result) => (
-          <CodeDiff
+          <CodeSnippet
             key={result.id}
             change={result}
             replaceBytes={replaceBytes}

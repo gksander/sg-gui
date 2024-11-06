@@ -1,9 +1,10 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { setActiveProjectPath } from "../models/projects";
+import { setActiveProjectPath } from "../lib/projects";
 
+// TODO: pretty this up, auto-trigger it...?
 export function NoActiveProject() {
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center h-full">
       <div>No active project</div>
       <button onClick={handleOpenProject}>Open project</button>
     </div>
