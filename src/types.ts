@@ -1,8 +1,8 @@
 export interface SgGuiResultItem {
   id: string;
   formattedLines: FormattedLine[];
-  byte_start: number;
-  byte_end: number;
+  byteStart: number;
+  byteEnd: number;
   replacement?: string;
   file: string; // Could theoretically kill this.
 }

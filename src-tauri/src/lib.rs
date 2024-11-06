@@ -121,20 +121,6 @@ fn exec_sg_query(
             formatted_lines,
             byte_start: result.range.byte_offset.start,
             byte_end: result.range.byte_offset.end,
-            range: Range {
-                byte_offset: ReplacementOffsets {
-                    start: result.range.byte_offset.start,
-                    end: result.range.byte_offset.end,
-                },
-                start: End {
-                    line: result.range.start.line.clone(),
-                    column: result.range.start.column.clone(),
-                },
-                end: End {
-                    line: result.range.end.line.clone(),
-                    column: result.range.end.column.clone(),
-                },
-            },
             file: result.file.clone(),
             replacement: result.replacement.clone().unwrap_or("".to_string()),
         };
@@ -151,7 +137,7 @@ fn exec_sg_query(
             .push(result);
     }
     for file_results in file_results_hash.values_mut() {
-        file_results.sort_by_key(|result| result.range.byte_offset.start);
+        file_results.sort_by_key(|result| result.byte_start);
     }
 
     let mut file_results_vec: Vec<(String, Vec<SgGuiResultItem>)> =
@@ -243,7 +229,6 @@ pub struct End {
 pub struct SgGuiResultItem {
     id: String,
     formatted_lines: Vec<FormattedLine>,
-    range: Range,
     file: String,
     replacement: String,
     byte_start: u32,

@@ -72,17 +72,6 @@ export function ProjectView({ path }: Props) {
     placeholderData: keepPreviousData,
   });
 
-  const { data } = useQuery({
-    queryKey: ["exec-sg-query", path, languageId, input],
-    queryFn: () =>
-      invoke("exec_sg_query", {
-        projectPath: path,
-        query: input,
-        language: LANGUAGES[languageId].sgLanguage,
-      }),
-  });
-  console.log(data);
-
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
   /**
@@ -96,8 +85,8 @@ export function ProjectView({ path }: Props) {
           Object.entries(replacements).map(([file, results]) => [
             file,
             results.map((result) => [
-              result.byte_start,
-              result.byte_end,
+              result.byteStart,
+              result.byteEnd,
               result.replacement!,
             ]),
           ]),
