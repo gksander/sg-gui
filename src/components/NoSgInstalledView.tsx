@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { queryClient } from "@/queries";
+import { queryClient } from "@/lib/queryClient";
 
 /**
  * This is ugly as shit, but does the job (roughly).

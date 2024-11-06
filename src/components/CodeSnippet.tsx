@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
-import { LanguageId, LANGUAGES } from "@/lib/languages";
+import { LanguageId, LANGUAGES } from "@/lib/models/languages";
 import { type ElementContent } from "hast";
 import { memo, useEffect, useState } from "react";
 import { VscReplaceAll } from "react-icons/vsc";

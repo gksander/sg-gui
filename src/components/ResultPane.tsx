@@ -2,7 +2,7 @@ import { ReplaceButton } from "@/components/ReplaceButton";
 import { PropsWithChildren, useMemo } from "react";
 import { SgGuiResultItem } from "../types";
 import { CodeSnippet } from "./CodeSnippet";
-import { LanguageId } from "@/lib/languages";
+import { LanguageId } from "@/lib/models/languages";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FaCircleExclamation } from "react-icons/fa6";
 

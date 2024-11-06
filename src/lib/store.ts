@@ -1,4 +1,4 @@
-import { queryClient } from "@/queries";
+import { queryClient } from "@/lib/queryClient";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { useCallback, useState } from "react";

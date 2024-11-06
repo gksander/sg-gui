@@ -1,5 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { setActiveProjectPath } from "../lib/projects";
+import { setActiveProjectPath } from "@/lib/models/projects";
 
 // TODO: pretty this up, auto-trigger it...?
 export function NoActiveProject() {

@@ -1,3 +1,5 @@
+import { NoSgInstalledView } from "@/components/NoSgInstalledView";
+import { sgCheckQuery } from "@/lib/models/sgCheck";
 import { initMonacoWithShiki } from "@/lib/shiki";
 import "@fontsource-variable/jetbrains-mono";
 import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
@@ -6,10 +8,8 @@ import { Suspense } from "react";
 import "./App.css";
 import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
-import { useActiveProjectPath } from "./lib/projects";
-import { queryClient } from "./queries";
-import { invoke } from "@tauri-apps/api/core";
-import { NoSgInstalledView } from "@/components/NoSgInstalledView";
+import { useActiveProjectPath } from "./lib/models/projects";
+import { queryClient } from "./lib/queryClient";
 
 function App() {
   return (
@@ -52,10 +52,7 @@ function BootstrapActiveProject() {
         queryKey: ["homeDir"],
         queryFn: () => homeDir(),
       },
-      {
-        queryKey: ["check-sg-installed"],
-        queryFn: () => invoke("check_sg_installed"),
-      },
+      sgCheckQuery(),
     ],
   });
 

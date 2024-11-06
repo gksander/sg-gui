@@ -13,17 +13,17 @@ import { FaRegFolder } from "react-icons/fa";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setActiveProjectPath } from "@/lib/models/projects";
 import { SHIKI_THEME } from "@/lib/shiki";
-import { queryClient } from "@/queries";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
+import { queryClient } from "@/lib/queryClient";
 import { SgGuiResultItem } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { createPortal } from "react-dom";
+import { LanguageId, LANGUAGES } from "../lib/models/languages";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
-import { LanguageId, LANGUAGES } from "../lib/languages";
-import { setActiveProjectPath } from "../lib/projects";
-import { useStorePersistedState } from "../store";
+import { useStorePersistedState } from "../lib/store";
 import { ResultPane } from "./ResultPane";
-import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 type Props = {
   path: string;

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { getStoreValue, setStoreValue } from "../store";
-import { queryClient } from "../queries";
+import { getStoreValue, setStoreValue } from "@/lib/store";
+import { queryClient } from "@/lib/queryClient";
 
 export function useActiveProjectPath() {
   return useSuspenseQuery({
