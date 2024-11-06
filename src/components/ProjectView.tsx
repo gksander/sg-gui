@@ -14,9 +14,8 @@ import {
 } from "@tanstack/react-query";
 import { homeDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useCallback, useMemo } from "react";
+import { Fragment, useCallback, useMemo } from "react";
 import { FaRegFolder } from "react-icons/fa";
-import { FaCircleExclamation } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import { SHIKI_THEME } from "@/lib/shiki";
@@ -28,12 +27,14 @@ import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
+import { createPortal } from "react-dom";
 
 type Props = {
   path: string;
+  homedir: string;
 };
 
-export function ProjectView({ path }: Props) {
+export function ProjectView({ path, homedir }: Props) {
   const [input, setInput] = useStorePersistedState<string>({
     path,
     key: "input",
@@ -139,42 +140,77 @@ export function ProjectView({ path }: Props) {
   );
 
   return (
-    <div className="h-full overflow-hidden flex flex-row">
-      <div className="w-[500px] flex flex-col">
-        <ProjectHeader
-          path={path}
-          languageId={languageId}
-          onChangeLanguageId={setLanguageId}
-        />
-        <div className="flex-1 overflow-hidden">
-          <Editor
-            height="100%"
-            language="yaml"
-            defaultValue={input}
-            theme={SHIKI_THEME}
-            options={{
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              fontSize: 14,
-              fontFamily: "JetBrains Mono Variable",
-              fontLigatures: true,
-            }}
-            onChange={onChange}
+    <Fragment>
+      <div className="h-full overflow-hidden flex flex-row">
+        <div className="w-[500px] flex flex-col">
+          <ProjectHeader
+            path={path}
+            languageId={languageId}
+            onChangeLanguageId={setLanguageId}
+          />
+          <div className="flex-1 overflow-hidden">
+            <Editor
+              height="100%"
+              language="yaml"
+              defaultValue={input}
+              theme={SHIKI_THEME}
+              options={{
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                fontFamily: "JetBrains Mono Variable",
+                fontLigatures: true,
+              }}
+              onChange={onChange}
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 h-full relative">
+          <RuleResults
+            results={results}
+            isReplacement={isReplacement}
+            replaceBytes={replaceBytes}
+            languageId={languageId}
+            error={scanError}
           />
         </div>
       </div>
 
-      <div className="flex-1 h-full relative">
-        <RuleResults
-          results={results}
-          isReplacement={isReplacement}
-          replaceBytes={replaceBytes}
-          languageId={languageId}
-          error={scanError}
-        />
-      </div>
-    </div>
+      {createPortal(
+        <div
+          className="h-full flex items-center justify-between select-none"
+          data-tauri-drag-region
+        >
+          <div className="flex-1 select-none" />
+          <button
+            onClick={handleOpenProject}
+            className="text-sm flex gap-2 items-center py-1 px-3 hover:bg-background-alt rounded transition-colors duration-150 select-none"
+          >
+            <FaRegFolder className="w-4 h-4" />
+            {getProjectPathRelativeToHome()}
+          </button>
+          <div className="flex-1 select-none" />
+        </div>,
+        document.querySelector("#app-titlebar")!,
+      )}
+    </Fragment>
   );
+
+  function getProjectPathRelativeToHome() {
+    return path.replace(homedir, "~");
+  }
+
+  async function handleOpenProject() {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+    });
+
+    if (selected) {
+      setActiveProjectPath(selected);
+    }
+  }
 }
 
 function ProjectHeader({
@@ -228,27 +264,6 @@ function ProjectHeader({
       setActiveProjectPath(selected);
     }
   }
-}
-
-function StatusBar({ error }: { error?: string | null }) {
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <div className="p-2 text-xs flex items-start gap-2 w-full shrink-0 bg-red-950">
-      <FaCircleExclamation className="w-3 h-3 shrink-0 mt-1" />
-      <div
-        className="flex-grow"
-        dangerouslySetInnerHTML={{
-          __html: error
-            .split("\n")
-            .map((text) => `<div>${text}</div>`)
-            .join(""),
-        }}
-      ></div>
-    </div>
-  );
 }
 
 const DEFAULT_RULE = `
