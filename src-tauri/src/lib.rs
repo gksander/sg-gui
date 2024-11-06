@@ -8,6 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
+            sg::check_sg_installed,
             sg::exec_sg_query,
             replace_bytes::replace_bytes_in_files
         ])

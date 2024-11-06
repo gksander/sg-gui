@@ -4,6 +4,12 @@ use std::collections::HashMap;
 use std::process::Command;
 
 #[tauri::command]
+pub fn check_sg_installed() -> Result<bool, String> {
+    let o = Command::new("sg").arg("--version").status();
+    Ok(o.is_ok())
+}
+
+#[tauri::command]
 pub fn exec_sg_query(
     query: &str,
     language: &str,

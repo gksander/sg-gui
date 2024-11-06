@@ -8,6 +8,8 @@ import { NoActiveProject } from "./components/NoActiveProject";
 import { ProjectView } from "./components/ProjectView";
 import { useActiveProjectPath } from "./lib/projects";
 import { queryClient } from "./queries";
+import { invoke } from "@tauri-apps/api/core";
+import { NoSgInstalledView } from "@/components/NoSgInstalledView";
 
 function App() {
   return (
@@ -37,7 +39,7 @@ function App() {
 function BootstrapActiveProject() {
   const { data: activeProjectPath } = useActiveProjectPath();
 
-  const [_, { data: homedir }] = useSuspenseQueries({
+  const [_, { data: homedir }, { data: sgInstalled }] = useSuspenseQueries({
     queries: [
       {
         queryKey: ["init-monaco"],
@@ -50,8 +52,16 @@ function BootstrapActiveProject() {
         queryKey: ["homeDir"],
         queryFn: () => homeDir(),
       },
+      {
+        queryKey: ["check-sg-installed"],
+        queryFn: () => invoke("check_sg_installed"),
+      },
     ],
   });
+
+  if (!sgInstalled) {
+    return <NoSgInstalledView />;
+  }
 
   if (!activeProjectPath) {
     return <NoActiveProject />;

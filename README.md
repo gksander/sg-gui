@@ -12,7 +12,6 @@
 ## CLEANUP:
 
 - [ ] code line height rem and placeholder div height... extract out specific line height to avoid drift
-- [ ] lib.rs cleanup
 
 ## FUTURE IMPROVEMENTS
 
