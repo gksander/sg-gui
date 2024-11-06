@@ -23,6 +23,7 @@ fn exec_sg_query(
     query: &str,
     language: &str,
     project_path: &str,
+    path_globs: &str,
 ) -> Result<Vec<(String, Vec<SgGuiResultItem>)>, String> {
     // Parse yaml to json
     let rule_yaml: Result<serde_yaml::Value, serde_yaml::Error> = serde_yaml::from_str(query);
@@ -45,6 +46,8 @@ fn exec_sg_query(
         .arg("--inline-rules")
         .arg(rule_json)
         .arg("--json=compact")
+        .arg("--globs")
+        .arg(path_globs)
         .current_dir(project_path)
         .output();
     let output = match output {

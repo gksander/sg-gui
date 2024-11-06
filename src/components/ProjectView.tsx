@@ -6,30 +6,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Editor from "@monaco-editor/react";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-import { homeDir } from "@tauri-apps/api/path";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Fragment, useCallback, useMemo } from "react";
 import { FaRegFolder } from "react-icons/fa";
 
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { SHIKI_THEME } from "@/lib/shiki";
 import { queryClient } from "@/queries";
 import { SgGuiResultItem } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
+import { createPortal } from "react-dom";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
 import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
-import { createPortal } from "react-dom";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 
 type Props = {
   path: string;
@@ -47,6 +41,13 @@ export function ProjectView({ path, homedir }: Props) {
     key: "languageId",
     initialValue: "tsx",
   });
+  const [globs, setGlobs] = useStorePersistedState<string>({
+    path,
+    key: "globs",
+    initialValue: "*",
+  });
+
+  const debouncedGlobs = useDebouncedValue(globs, 200);
 
   const onChange = useDebouncedCallback(
     useCallback((ruleString: string | undefined) => {
@@ -58,8 +59,8 @@ export function ProjectView({ path, homedir }: Props) {
   );
 
   const queryKey = useMemo(
-    () => ["scan-results", path, languageId, input],
-    [path, languageId, input],
+    () => ["scan-results", path, languageId, debouncedGlobs, input],
+    [path, languageId, debouncedGlobs, input],
   );
 
   const { data: results, error: scanError } = useQuery<
@@ -72,6 +73,7 @@ export function ProjectView({ path, homedir }: Props) {
         projectPath: path,
         query: input,
         language: LANGUAGES[languageId].sgLanguage,
+        pathGlobs: debouncedGlobs,
       }),
     gcTime: 0,
     retry: 0,
@@ -146,9 +148,10 @@ export function ProjectView({ path, homedir }: Props) {
       <div className="h-full overflow-hidden flex flex-row">
         <div className="w-[500px] flex flex-col">
           <LanguageAndGlobalInput
-            path={path}
             languageId={languageId}
             onChangeLanguageId={setLanguageId}
+            globs={globs}
+            onChangeGlobs={setGlobs}
           />
           <div className="flex-1 overflow-hidden">
             <Editor
@@ -216,18 +219,16 @@ export function ProjectView({ path, homedir }: Props) {
 }
 
 function LanguageAndGlobalInput({
-  path,
   languageId,
   onChangeLanguageId,
-}: Props & {
+  globs,
+  onChangeGlobs,
+}: {
   languageId: LanguageId;
   onChangeLanguageId: (languageId: LanguageId) => void;
+  globs: string;
+  onChangeGlobs: (globs: string) => void;
 }) {
-  const { data: homedir } = useSuspenseQuery({
-    queryKey: ["homeDir"],
-    queryFn: () => homeDir(),
-  });
-
   return (
     <div className="p-3 pr-0 border-b flex justify-between gap-2">
       <div className="flex flex-col gap-1.5">
@@ -249,7 +250,11 @@ function LanguageAndGlobalInput({
       <div className="flex-1 flex flex-col gap-1.5">
         <Label htmlFor="Glob">Glob</Label>
 
-        <Input id="glob" placeholder="src/**/*.tsx" />
+        <Input
+          id="glob"
+          value={globs}
+          onChange={(e) => onChangeGlobs(e.target.value)}
+        />
       </div>
     </div>
   );
