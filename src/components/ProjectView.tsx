@@ -28,6 +28,8 @@ import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
 import { createPortal } from "react-dom";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   path: string;
@@ -143,7 +145,7 @@ export function ProjectView({ path, homedir }: Props) {
     <Fragment>
       <div className="h-full overflow-hidden flex flex-row">
         <div className="w-[500px] flex flex-col">
-          <ProjectHeader
+          <LanguageAndGlobalInput
             path={path}
             languageId={languageId}
             onChangeLanguageId={setLanguageId}
@@ -213,7 +215,7 @@ export function ProjectView({ path, homedir }: Props) {
   }
 }
 
-function ProjectHeader({
+function LanguageAndGlobalInput({
   path,
   languageId,
   onChangeLanguageId,
@@ -226,31 +228,29 @@ function ProjectHeader({
     queryFn: () => homeDir(),
   });
 
-  const pathRelativeToHome = path.replace(homedir, "~");
-
   return (
-    <div className="p-2 pr-0 border-b flex justify-between">
-      <Button
-        onClick={handleOpenProject}
-        variant="ghost"
-        className="flex items-center gap-3 text-sm font-medium"
-      >
-        {pathRelativeToHome}
-        <FaRegFolder className="w-4 h-4" />
-      </Button>
+    <div className="p-3 pr-0 border-b flex justify-between gap-2">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="language">Language</Label>
+        <Select value={languageId} onValueChange={onChangeLanguageId}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Language" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(LANGUAGES).map(([languageId, languageConfig]) => (
+              <SelectItem key={languageId} value={languageId}>
+                {languageConfig.displayName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Select value={languageId} onValueChange={onChangeLanguageId}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Language" />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(LANGUAGES).map(([languageId, languageConfig]) => (
-            <SelectItem key={languageId} value={languageId}>
-              {languageConfig.displayName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex-1 flex flex-col gap-1.5">
+        <Label htmlFor="Glob">Glob</Label>
+
+        <Input id="glob" placeholder="src/**/*.tsx" />
+      </div>
     </div>
   );
 

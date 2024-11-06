@@ -159,5 +159,5 @@ function NoResultsView() {
 }
 
 function ContentWrapper({ children }: PropsWithChildren) {
-  return <div className="px-6 pb-3 pt-14">{children}</div>;
+  return <div className="px-6 pb-3 pt-8">{children}</div>;
 }
