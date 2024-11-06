@@ -1,13 +1,13 @@
 import { ReplaceButton } from "@/components/ReplaceButton";
 import { useMemo } from "react";
-import { SGResult } from "../types";
+import { SgGuiResultItem } from "../types";
 import { CodeDiff } from "./CodeDiff";
 import { LanguageId } from "@/models/languages";
 
 type Props = {
-  results: [string, SGResult[]][] | undefined;
+  results: [string, SgGuiResultItem[]][] | undefined;
   isReplacement: boolean;
-  replaceBytes: (replacements: Record<string, SGResult[]>) => void;
+  replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
 };
 
@@ -69,7 +69,7 @@ function FileResults({
   isReplacement,
   replaceBytes,
   languageId,
-}: { file: string; results: SGResult[] } & Pick<
+}: { file: string; results: SgGuiResultItem[] } & Pick<
   Props,
   "isReplacement" | "replaceBytes" | "languageId"
 >) {
@@ -120,7 +120,7 @@ function FileResults({
     results,
   }: {
     file: string;
-    results: SGResult[];
+    results: SgGuiResultItem[];
   }) {
     if (!isReplacement) return;
 

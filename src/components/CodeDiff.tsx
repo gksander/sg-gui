@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { isTruthy } from "@/lib/isTruthy";
 import { SHIKI_THEME } from "@/lib/shiki";
-import { diffLines } from "diff";
+import { LanguageId, LANGUAGES } from "@/models/languages";
 import { type ElementContent } from "hast";
-import { Fragment, memo, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, useEffect, useState } from "react";
 import { VscReplaceAll } from "react-icons/vsc";
 import { useInView } from "react-intersection-observer";
 import { codeToHast, hastToHtml } from "shiki";
 import invariant from "tiny-invariant";
-import { SGResult } from "../types";
-import { LanguageId, LANGUAGES } from "@/models/languages";
+import { SgGuiResultItem } from "../types";
 
 type Props = {
-  change: SGResult;
-  replaceBytes: (replacements: Record<string, SGResult[]>) => Promise<unknown>;
+  change: SgGuiResultItem;
+  replaceBytes: (
+    replacements: Record<string, SgGuiResultItem[]>,
+  ) => Promise<unknown>;
   languageId: LanguageId;
 };
 
@@ -24,61 +25,61 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
 
   const [ref, isInView] = useInView();
 
-  type DiffLine = { bl?: number; al?: number; dt?: string; value: string };
+  // type DiffLine = { bl?: number; al?: number; dt?: string; value: string };
 
-  /**
-   * Compute line diffs and decorate with information about before/after line numbers and whether it's an add or minus.
-   */
-  const lines = useMemo<DiffLine[]>(() => {
-    if (!isReplacement) {
-      let lineNo = change.range.start.line + 1;
+  // /**
+  //  * Compute line diffs and decorate with information about before/after line numbers and whether it's an add or minus.
+  //  */
+  // const lines = useMemo<DiffLine[]>(() => {
+  //   if (!isReplacement) {
+  //     let lineNo = change.range.start.line + 1;
 
-      return change.lines
-        .split("\n")
-        .map((text, index) => ({ bl: lineNo + index, value: text }));
-    }
+  //     return change.lines
+  //       .split("\n")
+  //       .map((text, index) => ({ bl: lineNo + index, value: text }));
+  //   }
 
-    // For diff'ing
-    let leftLineNo = change.range.start.line;
-    let rightLineNo = change.range.start.line;
-    const lineChanges = diffLines(
-      change.lines,
-      change.replacement
-        ? change.lines.replace(change.text, change.replacement)
-        : change.lines,
-    );
+  //   // For diff'ing
+  //   let leftLineNo = change.range.start.line;
+  //   let rightLineNo = change.range.start.line;
+  //   const lineChanges = diffLines(
+  //     change.lines,
+  //     change.replacement
+  //       ? change.lines.replace(change.text, change.replacement)
+  //       : change.lines,
+  //   );
 
-    const diffedLines: DiffLine[] = [];
+  //   const diffedLines: DiffLine[] = [];
 
-    for (const change of lineChanges) {
-      const changedLines = change.value.replace(/\n$/, "").split("\n");
+  //   for (const change of lineChanges) {
+  //     const changedLines = change.value.replace(/\n$/, "").split("\n");
 
-      for (const changedLine of changedLines) {
-        if (change.added) {
-          rightLineNo++;
-          diffedLines.push({ al: rightLineNo, dt: "+", value: changedLine });
-        } else if (change.removed) {
-          leftLineNo++;
-          diffedLines.push({ bl: leftLineNo, dt: "-", value: changedLine });
-        } else {
-          leftLineNo++;
-          rightLineNo++;
-          diffedLines.push({
-            bl: leftLineNo,
-            al: rightLineNo,
-            value: changedLine,
-          });
-        }
-      }
-    }
+  //     for (const changedLine of changedLines) {
+  //       if (change.added) {
+  //         rightLineNo++;
+  //         diffedLines.push({ al: rightLineNo, dt: "+", value: changedLine });
+  //       } else if (change.removed) {
+  //         leftLineNo++;
+  //         diffedLines.push({ bl: leftLineNo, dt: "-", value: changedLine });
+  //       } else {
+  //         leftLineNo++;
+  //         rightLineNo++;
+  //         diffedLines.push({
+  //           bl: leftLineNo,
+  //           al: rightLineNo,
+  //           value: changedLine,
+  //         });
+  //       }
+  //     }
+  //   }
 
-    return diffedLines;
-  }, [isReplacement, change]);
+  //   return diffedLines;
+  // }, [isReplacement, change]);
 
   const [haveLinesChanged, setHaveLinesChanged] = useState(false);
   useEffect(() => {
     setHaveLinesChanged(true);
-  }, [lines]);
+  }, [change.formattedLines]);
 
   /**
    * When code comes into view, run it thru a code -> HAST -> HTML transformation.
@@ -91,13 +92,11 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
 
     (async function () {
       try {
-        const hast = await codeToHast(
-          lines.map(({ value }) => value).join("\n"),
-          {
-            lang: language,
-            theme: SHIKI_THEME,
-          },
-        );
+        const lines = change.formattedLines;
+        const hast = await codeToHast(lines.map(({ val }) => val).join("\n"), {
+          lang: language,
+          theme: SHIKI_THEME,
+        });
 
         const pre = hast.children[0];
         invariant(pre.type === "element");
@@ -109,10 +108,10 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
         const children: ElementContent[] = code.children
           .filter((el) => !(el.type === "text" && el.value === "\n"))
           .flatMap((el, index) => {
-            const { bl, al, dt } = lines[index] ?? {};
+            const { bln, aln, sign } = lines[index] ?? {};
 
             if (el.type === "element") {
-              el.properties["data-diff-type"] = dt;
+              el.properties["data-diff-type"] = sign;
             }
 
             return [
@@ -128,7 +127,7 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
                     children: [
                       {
                         type: "text" as const,
-                        value: typeof bl === "number" ? String(bl) : "",
+                        value: typeof bln === "number" ? String(bln) : "",
                       },
                     ],
                   },
@@ -139,7 +138,7 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
                     children: [
                       {
                         type: "text" as const,
-                        value: typeof al === "number" ? String(al) : "",
+                        value: typeof aln === "number" ? String(aln) : "",
                       },
                     ],
                   },
@@ -200,14 +199,14 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
     return (
       <pre className="shiki bg-[#2d353b] text-[#d3c6aa]">
         <code data-is-replacement={isReplacement}>
-          {lines.map(({ bl, al, dt, value }, index) => (
+          {change.formattedLines.map(({ bln, aln, sign, val }, index) => (
             <Fragment key={index}>
               <div className="line-numbers">
-                {<span>{bl}</span>}
-                {isReplacement && <span>{al}</span>}
+                {<span>{bln}</span>}
+                {isReplacement && <span>{aln}</span>}
               </div>
-              <div className="line" key={index} data-diff-type={dt}>
-                {value}
+              <div className="line" key={index} data-diff-type={sign}>
+                {val}
               </div>
             </Fragment>
           ))}

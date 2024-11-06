@@ -28,7 +28,7 @@ import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
-import { SGResult } from "@/types";
+import { SgGuiResultItem } from "@/types";
 
 type Props = {
   path: string;
@@ -63,7 +63,7 @@ export function ProjectView({ path }: Props) {
   const { data: results, error: scanError } = useQuery({
     queryKey: queryKey,
     queryFn: () =>
-      invoke<[string, SGResult[]][]>("exec_sg_query", {
+      invoke<[string, SgGuiResultItem[]][]>("exec_sg_query", {
         projectPath: path,
         query: input,
         language: LANGUAGES[languageId].sgLanguage,
@@ -90,7 +90,7 @@ export function ProjectView({ path }: Props) {
    * TODO: could theoretically try to slice cache? not sure it's worth it... SG is pretty fuckin' fast
    */
   const { mutate } = useMutation({
-    mutationFn: (replacements: Record<string, SGResult[]>) => {
+    mutationFn: (replacements: Record<string, SgGuiResultItem[]>) => {
       return invoke("replace_bytes_in_files", {
         projectPath: path,
         replacements: Object.fromEntries(
@@ -144,7 +144,7 @@ export function ProjectView({ path }: Props) {
    * Wrapped in view transition to enable smooth UI updates.
    */
   const replaceBytes = useCallback(
-    (replacements: Record<string, SGResult[]>) => {
+    (replacements: Record<string, SgGuiResultItem[]>) => {
       document.startViewTransition(() => mutate(replacements));
     },
     [mutate],

@@ -1,8 +1,11 @@
 import { Command } from "@tauri-apps/plugin-shell";
 import jsYaml from "js-yaml";
-import { SGResult } from "../types";
+import { SgGuiResultItem } from "../types";
 import { LanguageId, LANGUAGES } from "./languages";
 
+/**
+ * @deprecated
+ */
 export async function getSGResults({
   path,
   rule,
@@ -39,9 +42,9 @@ export async function getSGResults({
     throw new Error(lastLineStripped);
   }
 
-  const rawResults = JSON.parse(stdout) as SGResult[];
+  const rawResults = JSON.parse(stdout) as SgGuiResultItem[];
 
-  const fileResults = rawResults.reduce<Record<string, SGResult[]>>(
+  const fileResults = rawResults.reduce<Record<string, SgGuiResultItem[]>>(
     (acc, result) => {
       result.id = `${result.file}:${result.range.byteOffset.start}:${result.range.byteOffset.end}`;
 

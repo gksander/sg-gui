@@ -1,5 +1,8 @@
-export interface SGResult {
+export interface SgGuiResultItem {
+  // shit we actually care about
   id: string;
+  formattedLines: FormattedLine[];
+
   text: string;
   range: {
     byteOffset: {
@@ -28,3 +31,10 @@ export interface SGResult {
   };
   language: string;
 }
+
+type FormattedLine = {
+  bln: number;
+  aln: number;
+  sign: string;
+  val: string;
+};

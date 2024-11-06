@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use similar::{ChangeTag, TextDiff};
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
@@ -53,31 +54,76 @@ fn exec_sg_query(
 
     let output_json: Result<Vec<SgResultRaw>, serde_json::Error> =
         serde_json::from_slice(&output.stdout);
-    let output_json = match output_json {
+    let mut output_json = match output_json {
         Ok(output_json) => output_json,
         Err(e) => return Err(e.to_string()),
     };
 
     // TODO: for each row, compute the diff and lines...
     let mut sg_gui_results: Vec<SgGuiResultItem> = Vec::new();
-    for result in output_json {
+    for result in output_json.iter_mut() {
         // Generate id and copy over other fields we need
         let mut sg_gui_result = SgGuiResultItem {
             id: format!(
                 "{}:{}:{}",
-                sg_gui_result.file,
-                sg_gui_result.range.byte_offset.start,
-                sg_gui_result.range.byte_offset.end,
+                result.file, result.range.byte_offset.start, result.range.byte_offset.end,
             ),
-            text: result.text,
-            range: result.range,
-            file: result.file,
-            lines: result.lines,
-            char_count: result.char_count,
-            replacement: result.replacement,
-            replacement_offsets: result.replacement_offsets,
-            language: result.language,
+            text: result.text.clone(),
+            range: Range {
+                byte_offset: ReplacementOffsets {
+                    start: result.range.byte_offset.start,
+                    end: result.range.byte_offset.end,
+                },
+                start: End {
+                    line: result.range.start.line.clone(),
+                    column: result.range.start.column.clone(),
+                },
+                end: End {
+                    line: result.range.end.line.clone(),
+                    column: result.range.end.column.clone(),
+                },
+            },
+            file: result.file.clone(),
+            lines: result.lines.clone(),
+            replacement: result.replacement.clone().unwrap_or("".to_string()),
+            language: result.language.clone(),
+            formatted_lines: Vec::new(),
         };
+
+        // TODO: if no replacement, just use the original lines
+
+        // Create diff between lines and replacement
+        let replaced_lines = result.lines.replace(
+            &result.text,
+            &result.replacement.clone().unwrap_or("".to_string()),
+        );
+        let diff = similar::TextDiff::from_lines(&result.lines, &replaced_lines);
+        let start_line_no = result.range.start.line + 1;
+
+        for change in diff.iter_all_changes() {
+            let old_line_no = match change.old_index() {
+                Some(old_line_no) => Some(start_line_no + old_line_no),
+                None => None,
+            };
+            let new_line_no = match change.new_index() {
+                Some(new_line_no) => Some(start_line_no + new_line_no),
+                None => None,
+            };
+            let sign = match change.tag() {
+                ChangeTag::Delete => "-",
+                ChangeTag::Insert => "+",
+                ChangeTag::Equal => "",
+            };
+
+            sg_gui_result.formatted_lines.push(FormattedLine {
+                bln: old_line_no,
+                aln: new_line_no,
+                sign: sign.to_string(),
+                val: change.value().to_string().replace("\n", ""),
+            });
+
+            // sg_gui_result.some_other_shit.push_str(&format!("{:?}", change));
+        }
 
         sg_gui_results.push(sg_gui_result);
     }
@@ -148,8 +194,7 @@ pub struct SgResultRaw {
     file: String,
     lines: String,
     char_count: CharCount,
-    replacement: String,
-    replacement_offsets: ReplacementOffsets,
+    replacement: Option<String>,
     language: String,
 }
 
@@ -175,8 +220,8 @@ pub struct ReplacementOffsets {
 
 #[derive(Serialize, Deserialize)]
 pub struct End {
-    line: i64,
-    column: i64,
+    line: usize,
+    column: usize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -187,8 +232,16 @@ pub struct SgGuiResultItem {
     range: Range,
     file: String,
     lines: String,
-    char_count: CharCount,
     replacement: String,
-    replacement_offsets: ReplacementOffsets,
     language: String,
+    formatted_lines: Vec<FormattedLine>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FormattedLine {
+    bln: Option<usize>,
+    aln: Option<usize>,
+    sign: String,
+    val: String,
 }
