@@ -56,17 +56,33 @@ export function ProjectView({ path }: Props) {
   );
 
   const queryKey = useMemo(
-    () => ["scan-results", languageId, input],
-    [languageId, input],
+    () => ["scan-results", path, languageId, input],
+    [path, languageId, input],
   );
 
   const { data: results, error: scanError } = useQuery({
     queryKey: queryKey,
-    queryFn: () => getSGResults({ path, rule: input, languageId }),
+    queryFn: () =>
+      invoke<[string, SGResult[]][]>("exec_sg_query", {
+        projectPath: path,
+        query: input,
+        language: LANGUAGES[languageId].sgLanguage,
+      }),
     gcTime: 0,
     retry: 0,
     placeholderData: keepPreviousData,
   });
+
+  const { data } = useQuery({
+    queryKey: ["exec-sg-query", path, languageId, input],
+    queryFn: () =>
+      invoke("exec_sg_query", {
+        projectPath: path,
+        query: input,
+        language: LANGUAGES[languageId].sgLanguage,
+      }),
+  });
+  console.log(data);
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
