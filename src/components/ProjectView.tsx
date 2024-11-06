@@ -5,7 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getSGResults } from "@/models/sg";
 import Editor from "@monaco-editor/react";
 import {
   keepPreviousData,
@@ -22,13 +21,13 @@ import { FaCircleExclamation } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { SHIKI_THEME } from "@/lib/shiki";
 import { queryClient } from "@/queries";
+import { SgGuiResultItem } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { useDebouncedCallback } from "../lib/useDebouncedCallback";
 import { LanguageId, LANGUAGES } from "../models/languages";
 import { setActiveProjectPath } from "../models/projects";
 import { useStorePersistedState } from "../store";
 import { RuleResults } from "./RuleResults";
-import { SgGuiResultItem } from "@/types";
 
 type Props = {
   path: string;
@@ -52,7 +51,7 @@ export function ProjectView({ path }: Props) {
         setInput(ruleString.trim());
       }
     }, []),
-    500,
+    200,
   );
 
   const queryKey = useMemo(
@@ -97,8 +96,8 @@ export function ProjectView({ path }: Props) {
           Object.entries(replacements).map(([file, results]) => [
             file,
             results.map((result) => [
-              result.range.byteOffset.start,
-              result.range.byteOffset.end,
+              result.byte_start,
+              result.byte_end,
               result.replacement!,
             ]),
           ]),
@@ -107,7 +106,7 @@ export function ProjectView({ path }: Props) {
     },
 
     onMutate: (replacements) => {
-      queryClient.setQueryData<Awaited<ReturnType<typeof getSGResults>>>(
+      queryClient.setQueryData<[string, SgGuiResultItem[]][]>(
         queryKey,
         (old) => {
           if (!old) {

@@ -59,16 +59,68 @@ fn exec_sg_query(
         Err(e) => return Err(e.to_string()),
     };
 
-    // TODO: for each row, compute the diff and lines...
     let mut sg_gui_results: Vec<SgGuiResultItem> = Vec::new();
+
+    // For each result, create line info (including diff)
     for result in output_json.iter_mut() {
+        let mut formatted_lines: Vec<FormattedLine> = Vec::new();
+        let start_line_no = result.range.start.line + 1;
+
+        if result.replacement.is_none() {
+            // No replacement? Just add line number info in.
+            result
+                .lines
+                .split("\n")
+                .enumerate()
+                .for_each(|(index, line)| {
+                    formatted_lines.push(FormattedLine {
+                        bln: Some(start_line_no + index),
+                        aln: None,
+                        sign: None,
+                        val: line.to_string(),
+                    });
+                });
+        } else {
+            // Create diff between lines and replacement
+            let replaced_lines = result.lines.replace(
+                &result.text,
+                &result.replacement.clone().unwrap_or("".to_string()),
+            );
+            let diff = TextDiff::from_lines(&result.lines, &replaced_lines);
+
+            for change in diff.iter_all_changes() {
+                let old_line_no = match change.old_index() {
+                    Some(old_line_no) => Some(start_line_no + old_line_no),
+                    None => None,
+                };
+                let new_line_no = match change.new_index() {
+                    Some(new_line_no) => Some(start_line_no + new_line_no),
+                    None => None,
+                };
+                let sign = match change.tag() {
+                    ChangeTag::Delete => Some("-".to_string()),
+                    ChangeTag::Insert => Some("+".to_string()),
+                    ChangeTag::Equal => None,
+                };
+
+                formatted_lines.push(FormattedLine {
+                    bln: old_line_no,
+                    aln: new_line_no,
+                    sign: sign,
+                    val: change.value().to_string().replace("\n", ""),
+                });
+            }
+        }
+
         // Generate id and copy over other fields we need
-        let mut sg_gui_result = SgGuiResultItem {
+        let sg_gui_result = SgGuiResultItem {
             id: format!(
                 "{}:{}:{}",
                 result.file, result.range.byte_offset.start, result.range.byte_offset.end,
             ),
-            text: result.text.clone(),
+            formatted_lines,
+            byte_start: result.range.byte_offset.start,
+            byte_end: result.range.byte_offset.end,
             range: Range {
                 byte_offset: ReplacementOffsets {
                     start: result.range.byte_offset.start,
@@ -84,46 +136,8 @@ fn exec_sg_query(
                 },
             },
             file: result.file.clone(),
-            lines: result.lines.clone(),
             replacement: result.replacement.clone().unwrap_or("".to_string()),
-            language: result.language.clone(),
-            formatted_lines: Vec::new(),
         };
-
-        // TODO: if no replacement, just use the original lines
-
-        // Create diff between lines and replacement
-        let replaced_lines = result.lines.replace(
-            &result.text,
-            &result.replacement.clone().unwrap_or("".to_string()),
-        );
-        let diff = similar::TextDiff::from_lines(&result.lines, &replaced_lines);
-        let start_line_no = result.range.start.line + 1;
-
-        for change in diff.iter_all_changes() {
-            let old_line_no = match change.old_index() {
-                Some(old_line_no) => Some(start_line_no + old_line_no),
-                None => None,
-            };
-            let new_line_no = match change.new_index() {
-                Some(new_line_no) => Some(start_line_no + new_line_no),
-                None => None,
-            };
-            let sign = match change.tag() {
-                ChangeTag::Delete => "-",
-                ChangeTag::Insert => "+",
-                ChangeTag::Equal => "",
-            };
-
-            sg_gui_result.formatted_lines.push(FormattedLine {
-                bln: old_line_no,
-                aln: new_line_no,
-                sign: sign.to_string(),
-                val: change.value().to_string().replace("\n", ""),
-            });
-
-            // sg_gui_result.some_other_shit.push_str(&format!("{:?}", change));
-        }
 
         sg_gui_results.push(sg_gui_result);
     }
@@ -214,8 +228,8 @@ pub struct Range {
 
 #[derive(Serialize, Deserialize)]
 pub struct ReplacementOffsets {
-    start: i64,
-    end: i64,
+    start: u32,
+    end: u32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -228,13 +242,12 @@ pub struct End {
 #[serde(rename_all = "camelCase")]
 pub struct SgGuiResultItem {
     id: String,
-    text: String,
+    formatted_lines: Vec<FormattedLine>,
     range: Range,
     file: String,
-    lines: String,
     replacement: String,
-    language: String,
-    formatted_lines: Vec<FormattedLine>,
+    byte_start: u32,
+    byte_end: u32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -242,6 +255,6 @@ pub struct SgGuiResultItem {
 pub struct FormattedLine {
     bln: Option<usize>,
     aln: Option<usize>,
-    sign: String,
+    sign: Option<String>,
     val: String,
 }

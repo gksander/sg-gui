@@ -21,60 +21,9 @@ type Props = {
 export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
   const isReplacement = !!change.replacement;
   const [highlighted, setHighlighted] = useState("");
-  const skipHighlighting = change.lines.length > 2000;
+  const skipHighlighting = change.formattedLines.length > 2000;
 
   const [ref, isInView] = useInView();
-
-  // type DiffLine = { bl?: number; al?: number; dt?: string; value: string };
-
-  // /**
-  //  * Compute line diffs and decorate with information about before/after line numbers and whether it's an add or minus.
-  //  */
-  // const lines = useMemo<DiffLine[]>(() => {
-  //   if (!isReplacement) {
-  //     let lineNo = change.range.start.line + 1;
-
-  //     return change.lines
-  //       .split("\n")
-  //       .map((text, index) => ({ bl: lineNo + index, value: text }));
-  //   }
-
-  //   // For diff'ing
-  //   let leftLineNo = change.range.start.line;
-  //   let rightLineNo = change.range.start.line;
-  //   const lineChanges = diffLines(
-  //     change.lines,
-  //     change.replacement
-  //       ? change.lines.replace(change.text, change.replacement)
-  //       : change.lines,
-  //   );
-
-  //   const diffedLines: DiffLine[] = [];
-
-  //   for (const change of lineChanges) {
-  //     const changedLines = change.value.replace(/\n$/, "").split("\n");
-
-  //     for (const changedLine of changedLines) {
-  //       if (change.added) {
-  //         rightLineNo++;
-  //         diffedLines.push({ al: rightLineNo, dt: "+", value: changedLine });
-  //       } else if (change.removed) {
-  //         leftLineNo++;
-  //         diffedLines.push({ bl: leftLineNo, dt: "-", value: changedLine });
-  //       } else {
-  //         leftLineNo++;
-  //         rightLineNo++;
-  //         diffedLines.push({
-  //           bl: leftLineNo,
-  //           al: rightLineNo,
-  //           value: changedLine,
-  //         });
-  //       }
-  //     }
-  //   }
-
-  //   return diffedLines;
-  // }, [isReplacement, change]);
 
   const [haveLinesChanged, setHaveLinesChanged] = useState(false);
   useEffect(() => {
