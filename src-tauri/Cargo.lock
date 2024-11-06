@@ -3315,6 +3315,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "similar",
+ "strip-ansi-escapes",
  "tauri",
  "tauri-build",
  "tauri-plugin-cli",

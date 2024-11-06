@@ -145,7 +145,7 @@ export const CodeDiff = memo(({ change, languageId, replaceBytes }: Props) => {
 
     return (
       <pre
-        className="shiki bg-[#2d353b]"
+        className="shiki bg-background-alt"
         style={{ height: `${change.formattedLines.length * 2}rem` }}
       />
     );

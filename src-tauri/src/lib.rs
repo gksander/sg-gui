@@ -52,6 +52,23 @@ fn exec_sg_query(
         Err(e) => return Err(e.to_string()),
     };
 
+    // TODO: should probably extract this out to a fn
+    if !output.stderr.is_empty() {
+        let stderr = String::from_utf8(output.stderr).unwrap();
+
+        let last_line = stderr
+            .lines()
+            .filter(|line| !line.is_empty())
+            .last()
+            .unwrap_or(&stderr)
+            .replace("╰▻", "")
+            .to_string();
+
+        let last_line = String::from_utf8(strip_ansi_escapes::strip(&last_line)).unwrap();
+
+        return Err(last_line);
+    }
+
     let output_json: Result<Vec<SgResultRaw>, serde_json::Error> =
         serde_json::from_slice(&output.stdout);
     let mut output_json = match output_json {

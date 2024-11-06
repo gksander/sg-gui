@@ -1,14 +1,17 @@
 import { ReplaceButton } from "@/components/ReplaceButton";
-import { useMemo } from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { SgGuiResultItem } from "../types";
 import { CodeDiff } from "./CodeDiff";
 import { LanguageId } from "@/models/languages";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FaCircleExclamation } from "react-icons/fa6";
 
 type Props = {
   results: [string, SgGuiResultItem[]][] | undefined;
   isReplacement: boolean;
   replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
+  error?: string | null;
 };
 
 export function RuleResults({
@@ -16,6 +19,7 @@ export function RuleResults({
   isReplacement,
   replaceBytes,
   languageId,
+  error,
 }: Props) {
   const results = consumerResults ?? [];
   const numFiles = results.length;
@@ -24,13 +28,12 @@ export function RuleResults({
     [results],
   );
 
-  // TODO: pretty this up
+  if (error) {
+    return <ErrorView error={error} />;
+  }
+
   if (numResults === 0) {
-    return (
-      <div className="h-9 my-2 px-6 text-lg font-medium flex items-center">
-        No results
-      </div>
-    );
+    return <NoResultsView />;
   }
 
   // TODO: need to infinite scroll this... rendering all the shit at once ain't great.
@@ -128,4 +131,33 @@ function FileResults({
       [file]: results,
     });
   }
+}
+
+function ErrorView({ error }: { error: string }) {
+  return (
+    <ContentWrapper>
+      <Alert variant="destructive">
+        <FaCircleExclamation className="w-4 h-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    </ContentWrapper>
+  );
+}
+
+function NoResultsView() {
+  return (
+    <ContentWrapper>
+      <Alert>
+        <AlertTitle>No results</AlertTitle>
+        <AlertDescription>
+          No results were found for the selected files and rules.
+        </AlertDescription>
+      </Alert>
+    </ContentWrapper>
+  );
+}
+
+function ContentWrapper({ children }: PropsWithChildren) {
+  return <div className="px-6 pb-3 pt-14">{children}</div>;
 }

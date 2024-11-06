@@ -14,7 +14,13 @@ function App() {
       <div className="h-8 bg-transparent select-none" data-tauri-drag-region />
       <div className="flex-1 overflow-hidden">
         <QueryClientProvider client={queryClient}>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex items-center justify-center">
+                Loading...
+              </div>
+            }
+          >
             <BootstrapActiveProject />
           </Suspense>
         </QueryClientProvider>

@@ -59,7 +59,10 @@ export function ProjectView({ path }: Props) {
     [path, languageId, input],
   );
 
-  const { data: results, error: scanError } = useQuery({
+  const { data: results, error: scanError } = useQuery<
+    [string, SgGuiResultItem[]][],
+    string
+  >({
     queryKey: queryKey,
     queryFn: () =>
       invoke<[string, SgGuiResultItem[]][]>("exec_sg_query", {
@@ -159,8 +162,6 @@ export function ProjectView({ path }: Props) {
             onChange={onChange}
           />
         </div>
-
-        <StatusBar error={scanError} />
       </div>
 
       <div className="flex-1 h-full relative">
@@ -169,6 +170,7 @@ export function ProjectView({ path }: Props) {
           isReplacement={isReplacement}
           replaceBytes={replaceBytes}
           languageId={languageId}
+          error={scanError}
         />
       </div>
     </div>
@@ -228,7 +230,7 @@ function ProjectHeader({
   }
 }
 
-function StatusBar({ error }: { error?: Error | null }) {
+function StatusBar({ error }: { error?: string | null }) {
   if (!error) {
     return null;
   }
@@ -236,7 +238,15 @@ function StatusBar({ error }: { error?: Error | null }) {
   return (
     <div className="p-2 text-xs flex items-start gap-2 w-full shrink-0 bg-red-950">
       <FaCircleExclamation className="w-3 h-3 shrink-0 mt-1" />
-      <div className="flex-grow">{error.message}</div>
+      <div
+        className="flex-grow"
+        dangerouslySetInnerHTML={{
+          __html: error
+            .split("\n")
+            .map((text) => `<div>${text}</div>`)
+            .join(""),
+        }}
+      ></div>
     </div>
   );
 }
