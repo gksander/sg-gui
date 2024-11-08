@@ -5,7 +5,7 @@ import { queryClient } from "@/lib/queryClient";
 export function useActiveProjectPath() {
   return useSuspenseQuery({
     queryKey: QueryKeys.activeProjectPath(),
-    queryFn: () => getStoreValue("activeProjectPath"),
+    queryFn: () => getStoreValue("activeProjectPath").then((p) => p ?? null),
   });
 }
 

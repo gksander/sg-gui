@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <div
-        className="h-9 border-b bg-transparent select-none"
+        className="h-9 bg-transparent select-none"
         data-tauri-drag-region
         id="app-titlebar"
       />

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "sg-gui-tauri",
+  "productName": "SG GUI",
   "version": "0.1.0",
-  "identifier": "com.sg-gui-tauri.app",
+  "identifier": "com.sg-gui.app",
   "build": {
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",

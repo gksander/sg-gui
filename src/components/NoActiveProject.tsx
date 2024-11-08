@@ -1,8 +1,13 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { setActiveProjectPath } from "@/lib/models/projects";
+import { useEffect } from "react";
 
 // TODO: pretty this up, auto-trigger it...?
 export function NoActiveProject() {
+  useEffect(() => {
+    handleOpenProject();
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <div>No active project</div>
