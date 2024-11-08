@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist/server",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/server/**/*.ts"]
+}
