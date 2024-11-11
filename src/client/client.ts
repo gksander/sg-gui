@@ -10,4 +10,5 @@ export const QueryKeys = {
   cwd: () => ["project-path"],
   homedir: () => ["homedir"],
   sgCheck: () => ["sg-installed"],
+  initMonaco: () => ["init-monaco"],
 };

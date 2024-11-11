@@ -1,23 +1,28 @@
 import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
 import { honoClient, queryClient, QueryKeys } from "./client.ts";
 import { Suspense } from "react";
+// @ts-expect-error types mad, don't really care.
 import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
 import { NoSgInstalledView } from "@/client/components/NoSgInstalledView.tsx";
+import { ProjectView } from "@/client/components/ProjectView.tsx";
+import { initMonacoWithShiki } from "@/client/lib/shiki.ts";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Suspense
-        fallback={
-          <div className="w-full h-full flex items-center justify-center">
-            Loading...
-          </div>
-        }
-      >
-        <BootstrapActiveProject />
-      </Suspense>
-    </QueryClientProvider>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <QueryClientProvider client={queryClient}>
+        <Suspense
+          fallback={
+            <div className="w-full h-full flex items-center justify-center">
+              Loading...
+            </div>
+          }
+        >
+          <BootstrapActiveProject />
+        </Suspense>
+      </QueryClientProvider>
+    </div>
   );
 }
 
@@ -48,6 +53,13 @@ function BootstrapActiveProject() {
         queryKey: QueryKeys.sgCheck(),
         queryFn: () => honoClient["sg-check"].$get().then((res) => res.json()),
       },
+      {
+        queryKey: QueryKeys.initMonaco(),
+        queryFn: async () => {
+          await initMonacoWithShiki();
+          return { ok: true };
+        },
+      },
     ],
   });
 
@@ -55,13 +67,7 @@ function BootstrapActiveProject() {
     return <NoSgInstalledView />;
   }
 
-  return (
-    <div>
-      <div>{projectPath}</div>
-      <div>Home dir: {homedir}</div>
-      <div>SG installed? {sgInstalled ? "yes" : "no"}</div>
-    </div>
-  );
+  return <ProjectView path={projectPath} homedir={homedir} />;
 }
 
 export default App;
