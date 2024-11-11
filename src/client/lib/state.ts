@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { queryClient } from "@/client/client.ts";
 
-export function useStorePersistedState<T>({
+export function useStorePersistedState<T extends string>({
   path,
   key,
   initialValue,
@@ -18,7 +18,7 @@ export function useStorePersistedState<T>({
   const setState = useCallback(
     (value: T) => {
       _setState(value);
-      localStorage.set(storageKey, value).catch(() => {});
+      localStorage.setItem(storageKey, value);
       queryClient.setQueryData(["storePersistedState", path, key], value);
     },
     [key, path, storageKey],

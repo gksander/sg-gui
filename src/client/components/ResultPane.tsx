@@ -15,7 +15,7 @@ type Props = {
   isReplacement: boolean;
   replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
-  error?: string | null;
+  error?: Error | null;
 };
 
 export function ResultPane({
@@ -137,13 +137,13 @@ function FileResults({
   }
 }
 
-function ErrorView({ error }: { error: string }) {
+function ErrorView({ error }: { error: Error }) {
   return (
     <ContentWrapper>
       <Alert variant="destructive">
         <FaCircleExclamation className="w-4 h-4" />
         <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription>{error.message}</AlertDescription>
       </Alert>
     </ContentWrapper>
   );

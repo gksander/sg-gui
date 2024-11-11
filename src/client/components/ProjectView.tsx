@@ -13,7 +13,7 @@ import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import { SHIKI_THEME } from "@/client/lib/shiki";
 import { useDebouncedValue } from "@/client/lib/useDebouncedValue";
-import { queryClient } from "@/client/client";
+import { honoClient, queryClient } from "@/client/client";
 import { SgGuiResultItem } from "@/types";
 import { LanguageId, LANGUAGES } from "@/client/lib/languages";
 import { useDebouncedCallback } from "@/client/lib/useDebouncedCallback";
@@ -53,7 +53,7 @@ export function ProjectView({ path, homedir }: Props) {
       },
       [setInput],
     ),
-    200,
+    300,
   );
 
   const queryKey = useMemo(
@@ -61,28 +61,24 @@ export function ProjectView({ path, homedir }: Props) {
     [path, languageId, debouncedGlobs, input],
   );
 
-  const { data: results, error: scanError } = useQuery<
-    [string, SgGuiResultItem[]][],
-    string
-  >({
+  const { data, error: scanError } = useQuery({
     queryKey: queryKey,
-    // TODO: wire up to backend
-    queryFn: () => {
-      return [];
-      /**
-       *       invoke<[string, SgGuiResultItem[]][]>("exec_sg_query", {
-        projectPath: path,
-        query: input,
-        language: LANGUAGES[languageId].sgLanguage,
-        pathGlobs: debouncedGlobs,
-      }),
-
-       */
-    },
+    queryFn: () =>
+      honoClient["exec-sg-query"]
+        .$post({
+          json: {
+            projectPath: path,
+            query: input,
+            language: LANGUAGES[languageId].sgLanguage,
+            pathGlobs: debouncedGlobs,
+          },
+        })
+        .then((res) => res.json()),
     gcTime: 0,
     retry: 0,
     placeholderData: keepPreviousData,
   });
+  const results = data?.results ?? [];
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
@@ -204,7 +200,7 @@ function LanguageAndGlobsInput({
 }) {
   return (
     <div className="p-3 pr-0 border-b flex justify-between gap-4">
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <Label htmlFor="language">Language</Label>
         <Select value={languageId} onValueChange={onChangeLanguageId}>
           <SelectTrigger className="w-[180px]">
@@ -220,7 +216,7 @@ function LanguageAndGlobsInput({
         </Select>
       </div>
 
-      <div className="flex-1 flex flex-col gap-1.5">
+      <div className="flex-1 flex flex-col gap-2">
         <Label htmlFor="Glob">Glob</Label>
 
         <Input
@@ -235,5 +231,5 @@ function LanguageAndGlobsInput({
 
 const DEFAULT_RULE = `
 rule:
-  pattern: React.useMemo($FN, $DEPS)
+  pattern: ...
 `.trim();
