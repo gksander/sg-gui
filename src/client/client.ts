@@ -11,4 +11,15 @@ export const QueryKeys = {
   homedir: () => ["homedir"],
   sgCheck: () => ["sg-installed"],
   initMonaco: () => ["init-monaco"],
+  scan: ({
+    projectPath,
+    globs,
+    languageId,
+    input,
+  }: {
+    projectPath: string;
+    languageId: string;
+    globs: string;
+    input: string;
+  }) => ["scan-results", projectPath, languageId, globs, input],
 };

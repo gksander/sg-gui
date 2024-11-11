@@ -13,12 +13,13 @@ import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import { SHIKI_THEME } from "@/client/lib/shiki";
 import { useDebouncedValue } from "@/client/lib/useDebouncedValue";
-import { honoClient, queryClient } from "@/client/client";
+import { honoClient, queryClient, QueryKeys } from "@/client/client";
 import { SgGuiResultItem } from "@/types";
 import { LanguageId, LANGUAGES } from "@/client/lib/languages";
 import { useDebouncedCallback } from "@/client/lib/useDebouncedCallback";
 import { ResultPane } from "./ResultPane";
 import { useStorePersistedState } from "@/client/lib/state.ts";
+import { startViewTransition } from "@/client/lib/startViewTransition";
 
 type Props = {
   path: string;
@@ -57,7 +58,13 @@ export function ProjectView({ path, homedir }: Props) {
   );
 
   const queryKey = useMemo(
-    () => ["scan-results", path, languageId, debouncedGlobs, input],
+    () =>
+      QueryKeys.scan({
+        projectPath: path,
+        input,
+        languageId,
+        globs: debouncedGlobs,
+      }),
     [path, languageId, debouncedGlobs, input],
   );
 
@@ -78,27 +85,34 @@ export function ProjectView({ path, homedir }: Props) {
     retry: 0,
     placeholderData: keepPreviousData,
   });
-  const results = data?.results ?? [];
+  const results = data ?? [];
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
   const { mutate } = useMutation({
     mutationFn: (replacements: Record<string, SgGuiResultItem[]>) => {
-      // TODO: wire up to backend
       return Promise.resolve();
-      // return invoke("replace_bytes_in_files", {
-      //   projectPath: path,
-      //   replacements: Object.fromEntries(
-      //     Object.entries(replacements).map(([file, results]) => [
-      //       file,
-      //       results.map((result) => [
-      //         result.byteStart,
-      //         result.byteEnd,
-      //         result.replacement!,
-      //       ]),
-      //     ]),
-      //   ),
-      // });
+
+      return honoClient["replace-bytes"]
+        .$post({
+          json: {
+            projectPath: path,
+            replacements: Object.fromEntries(
+              Object.entries(replacements).map(([file, results]) => [
+                file,
+                results.map(
+                  (result) =>
+                    [
+                      result.byteStart,
+                      result.byteEnd,
+                      result.replacement!,
+                    ] as const,
+                ),
+              ]),
+            ),
+          },
+        })
+        .then((res) => res.json());
     },
 
     onMutate: (replacements) => {
@@ -131,8 +145,8 @@ export function ProjectView({ path, homedir }: Props) {
       );
     },
 
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
+    // onSettled: () =>
+    //   queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
   });
 
   /**
@@ -140,7 +154,7 @@ export function ProjectView({ path, homedir }: Props) {
    */
   const replaceBytes = useCallback(
     (replacements: Record<string, SgGuiResultItem[]>) => {
-      document.startViewTransition(() => mutate(replacements));
+      startViewTransition(() => mutate(replacements));
     },
     [mutate],
   );

@@ -1,6 +1,9 @@
 import { homedir } from "node:os";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
 import { execa } from "execa";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import yaml from "js-yaml";
 import { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.ts";
 import { zValidator } from "@hono/zod-validator";
@@ -13,7 +16,9 @@ const apiRoutes = new Hono()
    */
   .get("/cwd", async (c) => {
     return c.json({
-      cwd: process.cwd(),
+      // TODO: how to configure in dev...
+      // cwd: process.cwd(),
+      cwd: path.resolve(homedir(), "GitHub", "react-use"),
     });
   })
   /**
@@ -58,7 +63,7 @@ const apiRoutes = new Hono()
 
       const ruleJson = (await yaml.load(query)) as Record<string, unknown>;
       if (typeof ruleJson !== "object" || ruleJson === null) {
-        return c.json({ message: "Invalid rule YAML" }, 400);
+        throw new HTTPException(400, { message: "Invalid rule." });
       }
 
       ruleJson.id = "default-rule";
@@ -82,7 +87,7 @@ const apiRoutes = new Hono()
 
       const sgGuiResults = outputJson.map<SgGuiResultItem>((row) => {
         return {
-          id: `${row.file}:${row.range.byteOffset.start}:${row.range.byteOffset.end}`,
+          id: `${row.file.replace(/\W/g, "")}-${row.range.byteOffset.start}-${row.range.byteOffset.end}`,
           formattedLines: linesToFormattedLines({
             lines: row.lines,
             startLineNo: row.range.start.line + 1,
@@ -119,8 +124,61 @@ const apiRoutes = new Hono()
         a.localeCompare(b),
       );
 
+      return c.json(results);
+    },
+  )
+  .post(
+    "/replace-bytes",
+    zValidator(
+      "json",
+      z.object({
+        projectPath: z.string(),
+        replacements: z.record(
+          z.array(z.tuple([z.number(), z.number(), z.string()])),
+        ),
+      }),
+    ),
+    async (c) => {
+      const validated = c.req.valid("json");
+      const { projectPath, replacements } = validated;
+
+      console.log(projectPath, replacements);
+
+      for (const [file, bytesToReplace] of Object.entries(replacements)) {
+        const filePath = path.resolve(projectPath, file);
+        let fileBuffer = await fs.readFile(filePath);
+
+        let srcResidual = 0;
+        let dstResidual = 0;
+
+        for (const [
+          byteOffsetStart,
+          byteOffsetEnd,
+          replacement,
+        ] of bytesToReplace) {
+          const start = byteOffsetStart + dstResidual - srcResidual;
+          const end = byteOffsetEnd + dstResidual - srcResidual;
+
+          console.log(byteOffsetStart, byteOffsetEnd, replacement);
+
+          const replacementBytes = Buffer.from(replacement);
+
+          // TODO: how do we slice without creating new buffers...?
+          fileBuffer = Buffer.concat([
+            fileBuffer.slice(0, start),
+            replacementBytes,
+            fileBuffer.slice(end),
+          ]);
+
+          srcResidual += byteOffsetEnd - byteOffsetStart;
+          dstResidual += replacementBytes.length;
+        }
+
+        await fs.writeFile(filePath, fileBuffer);
+      }
+
       return c.json({
-        results,
+        success: true,
       });
     },
   );

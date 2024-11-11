@@ -107,13 +107,23 @@ export const CodeSnippet = memo(
           console.error(err);
         }
       })();
-    }, [isInView, highlighted, haveLinesChanged, language]);
+    }, [
+      isInView,
+      highlighted,
+      haveLinesChanged,
+      language,
+      skipHighlighting,
+      change.formattedLines,
+      isReplacement,
+    ]);
 
     return (
       <div
         className="relative exiting-element"
         ref={ref}
-        style={{ viewTransitionName: `code-diff-${change.id}` }}
+        style={{
+          viewTransitionName: `code-diff-${change.id}`,
+        }}
       >
         {getBody()}
 
