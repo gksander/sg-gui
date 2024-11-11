@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 210 8% 15%;
+
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+
+    --input: 217.2 32.6% 57.5%;
+
+    --ring: 212.7 26.8% 83.9%;
+
+    --chart-1: 220 70% 50%;
+
+    --chart-2: 160 60% 45%;
+
+    --chart-3: 30 80% 55%;
+
+    --chart-4: 280 65% 60%;
+
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply dark bg-background text-foreground;
+  }
+
+  body,
+  html {
+    font-size: 14px;
+    font-family: "JetBrains Mono Variable", monospace;
+  }
+}
+
+::view-transition-old(exiting) {
+  animation-name: exiting;
+  animation-duration: 200ms;
+  animation-timing-function: ease-in-out;
+  z-index: -1;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-delay: 50ms;
+  animation-duration: 300ms; /* Skip the cross-fade animation, resize instantly */
+  animation-timing-function: cubic-bezier(1, 0.025, 0.97, 0.36);
+}
+
+@keyframes exiting {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(300px);
+  }
+}
+
+pre.shiki {
+  @apply rounded-md overflow-x-auto overflow-y-hidden text-[0.9rem];
+
+  &::-webkit-scrollbar {
+    @apply h-1.5 bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-foreground/30 rounded-full;
+  }
+
+  > code {
+    font-family: "JetBrains Mono Variable", monospace;
+    @apply grid grid-cols-[min-content_1fr] gap-x-4 items-center;
+
+    /* Style up line numbers */
+    .line-numbers {
+      @apply flex select-none;
+      > * {
+        @apply w-[37.5px] flex-1 text-right;
+      }
+    }
+  }
+
+  .line {
+    @apply px-1 leading-[2rem];
+  }
+
+  /* Diff indicators, need better colors */
+  .line[data-diff-type="+"] {
+    @apply bg-green-900/50;
+  }
+  .line[data-diff-type="-"] {
+    @apply bg-red-900/50;
+  }
+
+  code[data-is-replacement] {
+    .line::before {
+      content: attr(data-diff-type);
+      @apply w-1 mr-2 select-none;
+    }
+  }
+}
+
+.pretty-scrollbar {
+  &::-webkit-scrollbar {
+    @apply w-2 bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-foreground/30 rounded-full;
+  }
+}
