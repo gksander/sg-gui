@@ -1,7 +1,7 @@
 {
   "name": "sg-gui",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -10,7 +10,7 @@
     "dev": "yarn run dev:client & yarn run dev:server",
     "build:client": "tsc -b && vite build",
     "build:server": "tsc -p tsconfig.server.json",
-    "build": "yarn run build:client && yarn run build:server",
+    "build": "rm -rf dist && yarn run build:client && yarn run build:server",
     "lint": "eslint .",
     "preview": "vite preview",
     "prepublishOnly": "yarn run build"
