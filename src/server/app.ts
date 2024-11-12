@@ -5,7 +5,7 @@ import { execa } from "execa";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import yaml from "js-yaml";
-import { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.ts";
+import type { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.js";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { diffLines } from "diff";
@@ -17,8 +17,8 @@ const apiRoutes = new Hono()
   .get("/cwd", async (c) => {
     return c.json({
       // TODO: how to configure in dev...
-      // cwd: process.cwd(),
-      cwd: path.resolve(homedir(), "GitHub", "react-use"),
+      cwd: process.cwd(),
+      // cwd: path.resolve(homedir(), "GitHub", "react-use"),
     });
   })
   /**
@@ -236,10 +236,10 @@ function linesToFormattedLines({
   return diffedLines;
 }
 
-const app = new Hono();
-app.route("/api", apiRoutes);
-
 export const createApp = () => {
+  const app = new Hono();
+  app.route("/api", apiRoutes);
+
   return app;
 };
 

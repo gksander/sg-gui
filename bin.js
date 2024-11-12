@@ -1,7 +1,10 @@
 #! /usr/bin/env node
 
+import yargs from "yargs";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+
+const argv = yargs(process.argv).argv;
 
 async function main() {
   const { createApp } = await import("./dist/server/app.js");
@@ -9,11 +12,13 @@ async function main() {
   const app = createApp();
   app.use("*", serveStatic({ root: "./dist/client" }));
 
+  const port = argv.port || 3000;
+
   serve({
     ...app,
-    port: 3000,
+    port,
   });
-  console.log("Server is running on port 3000");
+  console.log(`Server is running on http://localhost:${port}`);
 }
 
 main();

@@ -26,7 +26,7 @@ type Props = {
   homedir: string;
 };
 
-export function ProjectView({ path, homedir }: Props) {
+export function ProjectView({ path }: Props) {
   const [input, setInput] = useStorePersistedState<string>({
     path,
     key: "input",
