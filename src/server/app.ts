@@ -55,11 +55,8 @@ const apiRoutes = new Hono()
       }),
     ),
     async (c) => {
-      const start = performance.now();
-
       const validated = c.req.valid("json");
       const { projectPath, query, language, pathGlobs } = validated;
-      console.log(`Validated at ${performance.now() - start}ms`);
 
       const ruleJson = (await yaml.load(query)) as Record<string, unknown>;
       if (typeof ruleJson !== "object" || ruleJson === null) {
@@ -68,7 +65,6 @@ const apiRoutes = new Hono()
 
       ruleJson.id = "default-rule";
       ruleJson.language = language;
-      console.log(`Parsed YAML at ${performance.now() - start}ms`);
 
       const execResponse = await execa({ cwd: projectPath })`sg ${[
         "scan",
@@ -78,8 +74,6 @@ const apiRoutes = new Hono()
         pathGlobs,
         "--json=compact",
       ]}`;
-
-      console.log(`Executed at ${performance.now() - start}ms`);
 
       // TODO: error handling
 
@@ -142,8 +136,6 @@ const apiRoutes = new Hono()
       const validated = c.req.valid("json");
       const { projectPath, replacements } = validated;
 
-      console.log(projectPath, replacements);
-
       for (const [file, bytesToReplace] of Object.entries(replacements)) {
         const filePath = path.resolve(projectPath, file);
         let fileBuffer = await fs.readFile(filePath);
@@ -158,8 +150,6 @@ const apiRoutes = new Hono()
         ] of bytesToReplace) {
           const start = byteOffsetStart + dstResidual - srcResidual;
           const end = byteOffsetEnd + dstResidual - srcResidual;
-
-          console.log(byteOffsetStart, byteOffsetEnd, replacement);
 
           const replacementBytes = Buffer.from(replacement);
 

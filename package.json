@@ -1,8 +1,9 @@
 {
-  "name": "sg-gui-vite",
-  "private": true,
-  "version": "0.0.1",
+  "name": "sg-gui",
+  "private": false,
+  "version": "0.0.3",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "dev:client": "vite",
     "dev:server": "tsx watch src/server/main.ts",
@@ -11,7 +12,8 @@
     "build:server": "tsc -p tsconfig.server.json",
     "build": "yarn run build:client && yarn run build:server",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "yarn run build"
   },
   "bin": {
     "sg-gui": "./bin.js"
@@ -25,13 +27,13 @@
     "@hono/zod-validator": "^0.4.1",
     "diff": "^7.0.0",
     "execa": "^9.5.1",
-    "framer-motion": "^11.11.11",
     "hono": "^4.6.9",
     "js-yaml": "^4.1.0",
     "yargs": "^17.7.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "framer-motion": "^11.11.11",
     "@eslint/js": "^9.13.0",
     "@fontsource-variable/jetbrains-mono": "^5.1.1",
     "@monaco-editor/react": "^4.6.0",

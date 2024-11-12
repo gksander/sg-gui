@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 import yargs from "yargs";
+import path from "node:path";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 
@@ -10,7 +11,15 @@ async function main() {
   const { createApp } = await import("./dist/server/app.js");
 
   const app = createApp();
-  app.use("*", serveStatic({ root: "./dist/client" }));
+  app.use(
+    "*",
+    serveStatic({
+      root: path.relative(
+        process.cwd(),
+        path.resolve(import.meta.dirname, "dist/client"),
+      ),
+    }),
+  );
 
   const port = argv.port || 3000;
 
