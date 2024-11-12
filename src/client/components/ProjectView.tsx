@@ -40,7 +40,7 @@ export function ProjectView({ path }: Props) {
   const [globs, setGlobs] = useStorePersistedState<string>({
     path,
     key: "globs",
-    initialValue: "*",
+    initialValue: "",
   });
 
   const debouncedGlobs = useDebouncedValue(globs, 200);
