@@ -9,15 +9,17 @@ import { useInView } from "react-intersection-observer";
 import { codeToHast, hastToHtml } from "shiki";
 import invariant from "tiny-invariant";
 import type { SgGuiResultItem } from "@/types";
+import { motion } from "framer-motion";
 
 type Props = {
   change: SgGuiResultItem;
-  replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
+  exiting: boolean;
+  onReplace?: () => void;
 };
 
 export const CodeSnippet = memo(
-  ({ change, languageId, replaceBytes }: Props) => {
+  ({ change, languageId, exiting, onReplace }: Props) => {
     const isReplacement = !!change.replacement;
     const [highlighted, setHighlighted] = useState("");
     const skipHighlighting = change.formattedLines.length > 2000;
@@ -118,12 +120,11 @@ export const CodeSnippet = memo(
     ]);
 
     return (
-      <div
-        className="relative exiting-element"
+      <motion.div
+        className="relative"
         ref={ref}
-        style={{
-          viewTransitionName: `code-diff-${change.id}`,
-        }}
+        exit={exiting ? { height: 0, opacity: 0, x: 100 } : undefined}
+        transition={{ duration: 0.2 }}
       >
         {getBody()}
 
@@ -132,24 +133,12 @@ export const CodeSnippet = memo(
             className="absolute right-2 bottom-2"
             size="icon"
             variant="ghost"
-            onClick={(evt) => {
-              if (!change.replacement) return;
-
-              const exitingElement =
-                evt.currentTarget.closest(".exiting-element");
-              if (exitingElement instanceof HTMLElement) {
-                exitingElement.style.viewTransitionName = "exiting";
-              }
-
-              replaceBytes({
-                [change.file]: [change],
-              });
-            }}
+            onClick={onReplace}
           >
             <VscReplaceAll />
           </Button>
         )}
-      </div>
+      </motion.div>
     );
 
     function getBody() {

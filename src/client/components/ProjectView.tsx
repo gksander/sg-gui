@@ -19,7 +19,7 @@ import { LanguageId, LANGUAGES } from "@/client/lib/languages";
 import { useDebouncedCallback } from "@/client/lib/useDebouncedCallback";
 import { ResultPane } from "./ResultPane";
 import { useStorePersistedState } from "@/client/lib/state.ts";
-import { startViewTransition } from "@/client/lib/startViewTransition";
+import { sleep } from "../lib/sleep";
 
 type Props = {
   path: string;
@@ -90,10 +90,8 @@ export function ProjectView({ path, homedir }: Props) {
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
   const { mutate } = useMutation({
-    mutationFn: (replacements: Record<string, SgGuiResultItem[]>) => {
-      return Promise.resolve();
-
-      return honoClient["replace-bytes"]
+    mutationFn: async (replacements: Record<string, SgGuiResultItem[]>) => {
+      const request = honoClient["replace-bytes"]
         .$post({
           json: {
             projectPath: path,
@@ -113,6 +111,10 @@ export function ProjectView({ path, homedir }: Props) {
           },
         })
         .then((res) => res.json());
+
+      const [data] = await Promise.all([request, sleep(300)]);
+
+      return data;
     },
 
     onMutate: (replacements) => {
@@ -145,8 +147,8 @@ export function ProjectView({ path, homedir }: Props) {
       );
     },
 
-    // onSettled: () =>
-    //   queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
   });
 
   /**
@@ -154,7 +156,8 @@ export function ProjectView({ path, homedir }: Props) {
    */
   const replaceBytes = useCallback(
     (replacements: Record<string, SgGuiResultItem[]>) => {
-      startViewTransition(() => mutate(replacements));
+      mutate(replacements);
+      // startViewTransition(() => mutate(replacements));
     },
     [mutate],
   );

@@ -142,6 +142,8 @@ pre.shiki {
 }
 
 .pretty-scrollbar {
+  scrollbar-gutter: stable;
+
   &::-webkit-scrollbar {
     @apply w-2 bg-transparent;
   }
