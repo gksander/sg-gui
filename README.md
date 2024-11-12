@@ -1,50 +1,23 @@
-# React + TypeScript + Vite
+# SG GUI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repo is still in early days, but its goal is to provide a GUI on top of [the amazing ast-grep](https://ast-grep.github.io/).
 
-Currently, two official plugins are available:
+![Screenshot](./docs/img/screenshot.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+It aims to expose as much of the `sg scan` functionality from AST-GREP as possible but display results in a beautiful web GUI that's easy to use and allow for easy experimentation with rewrites (that can be applied one "chunk" at a time).
 
-## Expanding the ESLint configuration
+This project started as an experiment for me to learn more about Tauri and Rust, so don't expect perfection here.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## TODO:
 
-- Configure the top-level `parserOptions` property like this:
+- [ ] Perf improvements:
+  - [ ] Some sort of inf scroll, if there are thousands of results, need to be able to handle that.
+- [ ] Ellispis if in thousands for line number
+- [ ] Error handling for when sg scan fails
+- [ ] Need to do replacements based on offsets not the text itself
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## FUTURE IMPROVEMENTS
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+- [ ] Character diffs, showing which characters in line changed. (E.g. whitespace changes sg seems to randomly pick up)
+- [ ] View full file diff – similar code diff logic, just grab whole file contents and do the diff.
+- [ ] Infer the language from glob?

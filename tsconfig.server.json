@@ -1,11 +1,15 @@
 {
-  "extends": "./tsconfig.node.json",
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "./dist/server",
+    "outDir": "./dist",
+    "noEmit": false,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/server/**/*.ts", "src/types.ts"]
 }
