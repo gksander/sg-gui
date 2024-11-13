@@ -14,7 +14,12 @@ import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import { SHIKI_THEME } from "@/client/lib/shiki";
 import { useDebouncedValue } from "@/client/lib/useDebouncedValue";
-import { honoClient, queryClient, QueryKeys } from "@/client/client";
+import {
+  handleHonoResponse,
+  honoClient,
+  queryClient,
+  QueryKeys,
+} from "@/client/client";
 import { SgGuiResultItem } from "@/types";
 import { LanguageId, LANGUAGES } from "@/client/lib/languages";
 import { useDebouncedCallback } from "@/client/lib/useDebouncedCallback";
@@ -85,14 +90,7 @@ export function ProjectView({ path, homedir }: Props) {
             pathGlobs: debouncedGlobs,
           },
         })
-        // TODO: extract this out as part of our hono client...
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error(await res.text());
-          }
-
-          return res.json();
-        }),
+        .then(handleHonoResponse),
     gcTime: 0,
     retry: 0,
     placeholderData: keepPreviousData,

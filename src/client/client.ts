@@ -1,8 +1,18 @@
-import { hc } from "hono/client";
+import { type ClientResponse, hc } from "hono/client";
 import { ApiRoutes } from "../server/app";
 import { QueryClient } from "@tanstack/react-query";
 
 export const honoClient = hc<ApiRoutes>("/api");
+
+export async function handleHonoResponse<TResponse, TStatus extends number>(
+  res: ClientResponse<TResponse, TStatus, "json">,
+) {
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
+}
 
 export const queryClient = new QueryClient();
 

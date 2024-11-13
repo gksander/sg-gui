@@ -1,5 +1,10 @@
 import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
-import { honoClient, queryClient, QueryKeys } from "./client.ts";
+import {
+  handleHonoResponse,
+  honoClient,
+  queryClient,
+  QueryKeys,
+} from "./client.ts";
 import { Suspense, useEffect } from "react";
 // @ts-expect-error types mad, don't really care.
 import "@fontsource-variable/jetbrains-mono";
@@ -50,17 +55,17 @@ function BootstrapActiveProject() {
     queries: [
       {
         queryKey: QueryKeys.cwd(),
-        queryFn: () => honoClient.cwd.$get().then((res) => res.json()),
+        queryFn: () => honoClient.cwd.$get().then(handleHonoResponse),
         staleTime: Infinity,
       },
       {
         queryKey: QueryKeys.homedir(),
-        queryFn: () => honoClient.homedir.$get().then((res) => res.json()),
+        queryFn: () => honoClient.homedir.$get().then(handleHonoResponse),
         staleTime: Infinity,
       },
       {
         queryKey: QueryKeys.sgCheck(),
-        queryFn: () => honoClient["sg-check"].$get().then((res) => res.json()),
+        queryFn: () => honoClient["sg-check"].$get().then(handleHonoResponse),
       },
       {
         queryKey: QueryKeys.initMonaco(),
