@@ -13,18 +13,20 @@ import { AnimatePresence, motion } from "framer-motion";
 
 type Props = {
   results: [string, SgGuiResultItem[]][] | undefined;
+  error?: Error | null;
+  isFetching: boolean;
   isReplacement: boolean;
   replaceBytes: (replacements: Record<string, SgGuiResultItem[]>) => void;
   languageId: LanguageId;
-  error?: Error | null;
 };
 
 export function ResultPane({
   results: consumerResults,
+  error,
+  isFetching,
   isReplacement,
   replaceBytes,
   languageId,
-  error,
 }: Props) {
   const [exiting, setExiting] = useState(false);
 
@@ -37,6 +39,14 @@ export function ResultPane({
 
   if (error) {
     return <ErrorView error={error} />;
+  }
+
+  if (!consumerResults && isFetching) {
+    return (
+      <ContentWrapper>
+        <div>Loading...</div>
+      </ContentWrapper>
+    );
   }
 
   if (numResults === 0) {

@@ -9,6 +9,7 @@ import type { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.js";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { diffLines } from "diff";
+import { StatusCode } from "hono/utils/http-status";
 
 const apiRoutes = new Hono()
   /**
@@ -60,13 +61,16 @@ const apiRoutes = new Hono()
 
       const ruleJson = (await yaml.load(query)) as Record<string, unknown>;
       if (typeof ruleJson !== "object" || ruleJson === null) {
-        throw new HTTPException(400, { message: "Invalid rule." });
+        throwHttpException(400, "Invalid rule.");
       }
 
       ruleJson.id = "default-rule";
       ruleJson.language = language;
 
-      const execResponse = await execa({ cwd: projectPath })`sg ${[
+      const execResponse = await execa({
+        cwd: projectPath,
+        reject: false,
+      })`sg ${[
         "scan",
         "--inline-rules",
         JSON.stringify(ruleJson),
@@ -75,7 +79,16 @@ const apiRoutes = new Hono()
         "--json=compact",
       ]}`;
 
-      // TODO: error handling
+      if (execResponse.failed) {
+        const lastLine =
+          execResponse.stderr.split("\n").filter(Boolean).at(-1) ?? "";
+        const lastLineStripped = lastLine
+          // eslint-disable-next-line no-control-regex
+          ?.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "")
+          .replace(/╰▻ /g, "");
+
+        throwHttpException(400, lastLineStripped);
+      }
 
       const outputJson = JSON.parse(execResponse.stdout) as SGResultRow[];
 
@@ -224,6 +237,14 @@ function linesToFormattedLines({
   }
 
   return diffedLines;
+}
+
+function throwHttpException(statusCode: StatusCode, message: string) {
+  const response = new Response(message, {
+    status: statusCode,
+  });
+
+  throw new HTTPException(statusCode, { res: response });
 }
 
 export const createApp = () => {

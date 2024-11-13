@@ -69,7 +69,11 @@ export function ProjectView({ path, homedir }: Props) {
     [path, languageId, debouncedGlobs, input],
   );
 
-  const { data, error: scanError } = useQuery({
+  const {
+    data: results,
+    error: scanError,
+    isFetching,
+  } = useQuery({
     queryKey: queryKey,
     queryFn: () =>
       honoClient["exec-sg-query"]
@@ -81,12 +85,18 @@ export function ProjectView({ path, homedir }: Props) {
             pathGlobs: debouncedGlobs,
           },
         })
-        .then((res) => res.json()),
+        // TODO: extract this out as part of our hono client...
+        .then(async (res) => {
+          if (!res.ok) {
+            throw new Error(await res.text());
+          }
+
+          return res.json();
+        }),
     gcTime: 0,
     retry: 0,
     placeholderData: keepPreviousData,
   });
-  const results = data ?? [];
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
@@ -186,10 +196,11 @@ export function ProjectView({ path, homedir }: Props) {
         <div className="flex-1 h-full relative">
           <ResultPane
             results={results}
+            error={scanError}
+            isFetching={isFetching}
             isReplacement={isReplacement}
             replaceBytes={replaceBytes}
             languageId={languageId}
-            error={scanError}
           />
         </div>
       </div>
