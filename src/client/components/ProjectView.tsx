@@ -243,6 +243,7 @@ function LanguageAndGlobsInput({
         <Input
           id="glob"
           value={globs}
+          placeholder="*"
           onChange={(e) => onChangeGlobs(e.target.value)}
         />
       </div>

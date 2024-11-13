@@ -62,8 +62,8 @@ export function ResultPane({
         )}
       />
 
-      <div className="flex justify-between items-center mb-4 px-6">
-        <span className="font-bold pt-10 flex items-center">
+      <div className="flex justify-between items-center pt-9 pb-6 px-6">
+        <span className="font-bold flex items-center">
           {numResults} matches in {numFiles} files
         </span>
 

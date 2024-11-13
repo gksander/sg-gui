@@ -1,15 +1,12 @@
 import { homedir } from "node:os";
-import * as path from "node:path";
-import * as fs from "node:fs/promises";
 import { execa } from "execa";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { execSgQuery, execSgQueryArgsSchema } from "@/server/services/sg.ts";
+import { execSgQuery, execSgQueryArgsSchema } from "./services/sg.js";
 import {
   replaceBytes,
   replaceBytesArgsSchema,
-} from "@/server/services/replaceBytes.ts";
+} from "./services/replaceBytes.js";
 
 const apiRoutes = new Hono()
   /**
@@ -18,8 +15,8 @@ const apiRoutes = new Hono()
   .get("/cwd", async (c) => {
     return c.json({
       // TODO: how to configure in dev...
-      // cwd: process.cwd(),
-      cwd: path.resolve(homedir(), "GitHub", "react-use"),
+      cwd: process.cwd(),
+      // cwd: path.resolve(homedir(), "GitHub", "react-use"),
     });
   })
   /**
