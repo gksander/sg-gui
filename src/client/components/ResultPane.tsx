@@ -10,6 +10,9 @@ import {
 } from "@/client/components/ui/alert";
 import { FaCircleExclamation } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
+import { Skeleton } from "@/client/components/ui/skeleton.tsx";
+import { ImSpinner2 } from "react-icons/im";
+import { clsx } from "clsx";
 
 type Props = {
   results: [string, SgGuiResultItem[]][] | undefined;
@@ -21,7 +24,7 @@ type Props = {
 };
 
 export function ResultPane({
-  results: consumerResults,
+  results,
   error,
   isFetching,
   isReplacement,
@@ -30,23 +33,18 @@ export function ResultPane({
 }: Props) {
   const [exiting, setExiting] = useState(false);
 
-  const results = consumerResults ?? [];
-  const numFiles = results.length;
+  const numFiles = results?.length ?? 0;
   const numResults = useMemo(
-    () => results.reduce((acc, [, results]) => acc + results.length, 0),
+    () => (results ?? []).reduce((acc, [, results]) => acc + results.length, 0),
     [results],
   );
 
-  if (error) {
-    return <ErrorView error={error} />;
+  if (!results && isFetching) {
+    return <LoadingView />;
   }
 
-  if (!consumerResults && isFetching) {
-    return (
-      <ContentWrapper>
-        <div>Loading...</div>
-      </ContentWrapper>
-    );
+  if (error) {
+    return <ErrorView error={error} />;
   }
 
   if (numResults === 0) {
@@ -57,6 +55,13 @@ export function ResultPane({
 
   return (
     <div className="absolute inset-0 overflow-y-auto overflow-x-hidden pretty-scrollbar isolate">
+      <ImSpinner2
+        className={clsx(
+          "fixed bottom-4 right-4 w-8 h-8 z-10 opacity-0 transition-opacity duration-150 delay-300",
+          isFetching && "animate-spin opacity-100",
+        )}
+      />
+
       <div className="flex justify-between items-center mb-4 px-6">
         <span className="font-bold pt-10 flex items-center">
           {numResults} matches in {numFiles} files
@@ -70,7 +75,7 @@ export function ResultPane({
           initial={false}
           onExitComplete={() => setExiting(false)}
         >
-          {results.map(([file, results]) => (
+          {results?.map(([file, results]) => (
             <FileResults
               key={file}
               file={file}
@@ -88,6 +93,10 @@ export function ResultPane({
   );
 
   function replaceAll() {
+    if (!results) {
+      return;
+    }
+
     return replaceBytes(Object.fromEntries(results));
   }
 }
@@ -177,6 +186,17 @@ function FileResults({
       [file]: results,
     });
   }
+}
+
+function LoadingView() {
+  return (
+    <div className="px-6">
+      <div className="pt-10 pb-5">
+        <Skeleton className="w-[250px] h-6"></Skeleton>
+      </div>
+      <Skeleton className="shiki h-[250px]" />
+    </div>
+  );
 }
 
 function ErrorView({ error }: { error: Error }) {
