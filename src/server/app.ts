@@ -5,7 +5,12 @@ import { execa } from "execa";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import yaml from "js-yaml";
-import type { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.js";
+import type {
+  CharCount,
+  FormattedLine,
+  SgGuiResultItem,
+  SGResultRow,
+} from "@/types.js";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { diffLines } from "diff";
@@ -98,8 +103,8 @@ const apiRoutes = new Hono()
           formattedLines: linesToFormattedLines({
             lines: row.lines,
             startLineNo: row.range.start.line + 1,
-            text: row.text,
             replacement: row.replacement,
+            charCount: row.charCount,
           }),
           byteStart: row.range.byteOffset.start,
           byteEnd: row.range.byteOffset.end,
@@ -166,7 +171,7 @@ const apiRoutes = new Hono()
 
           const replacementBytes = Buffer.from(replacement);
 
-          // TODO: how do we slice without creating new buffers...?
+          // Don't think there's a way to splice without creating intermediate buffers.
           fileBuffer = Buffer.concat([
             fileBuffer.slice(0, start),
             replacementBytes,
@@ -189,13 +194,13 @@ const apiRoutes = new Hono()
 function linesToFormattedLines({
   lines,
   startLineNo,
-  text,
   replacement,
+  charCount,
 }: {
   lines: string;
-  text: string;
   replacement?: string;
   startLineNo: number;
+  charCount: CharCount;
 }): FormattedLine[] {
   if (!replacement) {
     return lines.split("\n").map<FormattedLine>((line, i) => {
@@ -206,9 +211,14 @@ function linesToFormattedLines({
     });
   }
 
-  // TODO: not sure .replace is really the proper approach here, should probably use byte offsets
-  const replacementLines = lines.replace(text, replacement);
-  const lineChanges = diffLines(lines, replacementLines);
+  const replacementLines =
+    lines.slice(0, charCount.leading) +
+    replacement +
+    lines.slice(-charCount.trailing);
+
+  const lineChanges = diffLines(lines, replacementLines, {
+    ignoreWhitespace: true,
+  });
   let leftLineNo = startLineNo;
   let rightLineNo = startLineNo;
 

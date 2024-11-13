@@ -10,7 +10,6 @@ This project started as an experiment for me to learn more about Tauri and Rust,
 
 ## TODO:
 
-- [ ] Need to do replacements based on offsets not the text itself
 - [ ] Perf improvements:
   - [ ] don't ship all of shiki's languages.
   - [ ] Some sort of inf scroll? if there are thousands of results, need to be able to handle that.

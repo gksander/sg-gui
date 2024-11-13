@@ -20,8 +20,9 @@ export interface SGResultRow {
   file: string;
   lines: string;
   replacement: string;
-  replacement_offsets: ReplacementOffsets;
+  replacementOffsets: ReplacementOffsets;
   language: string;
+  charCount: CharCount;
 }
 
 interface Range {
@@ -30,7 +31,7 @@ interface Range {
   end: End;
 }
 
-interface ReplacementOffsets {
+export interface ReplacementOffsets {
   start: number;
   end: number;
 }
@@ -38,4 +39,9 @@ interface ReplacementOffsets {
 interface End {
   line: number;
   column: number;
+}
+
+export interface CharCount {
+  leading: number;
+  trailing: number;
 }
