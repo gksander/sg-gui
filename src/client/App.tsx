@@ -1,17 +1,19 @@
 import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
 import { honoClient, queryClient, QueryKeys } from "./client.ts";
-import { Fragment, Suspense } from "react";
-import { Helmet } from "react-helmet";
+import { Suspense, useEffect } from "react";
 // @ts-expect-error types mad, don't really care.
 import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
 import { NoSgInstalledView } from "@/client/components/NoSgInstalledView.tsx";
 import { ProjectView } from "@/client/components/ProjectView.tsx";
 import { initMonacoWithShiki } from "@/client/lib/shiki.ts";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
-function App() {
+export function App() {
+  usePingServerOnClose();
+
   return (
-    <Fragment>
+    <HelmetProvider>
       <Helmet>
         <title>SG GUI</title>
       </Helmet>
@@ -29,7 +31,7 @@ function App() {
           </Suspense>
         </QueryClientProvider>
       </div>
-    </Fragment>
+    </HelmetProvider>
   );
 }
 
@@ -77,4 +79,20 @@ function BootstrapActiveProject() {
   return <ProjectView path={projectPath} homedir={homedir} />;
 }
 
-export default App;
+function usePingServerOnClose() {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    window.addEventListener(
+      "unload",
+      () => {
+        console.log("PING");
+      },
+      { signal: controller.signal },
+    );
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+}

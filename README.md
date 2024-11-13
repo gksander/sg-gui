@@ -11,11 +11,10 @@ This project started as an experiment for me to learn more about Tauri and Rust,
 ## TODO:
 
 - [ ] Perf improvements:
-  - [ ] don't ship all of shiki's languages.
+  - [ ] don't ship all of shiki's languages?
   - [ ] Some sort of inf scroll? if there are thousands of results, need to be able to handle that.
 - [ ] Ellispses if in thousands for line number
 - [ ] Proper release workflow
-- [ ] Something is up with glob, using '*' really wonks stuff... don't use that as a default.
 - [ ] Kill process/browser window if the other close
 
 ## Cleanup

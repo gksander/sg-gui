@@ -8,7 +8,7 @@ import {
 import Editor from "@monaco-editor/react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Fragment, useCallback, useMemo } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
