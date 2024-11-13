@@ -10,17 +10,20 @@ This project started as an experiment for me to learn more about Tauri and Rust,
 
 ## TODO:
 
-- [ ] Need to show active project somewhere (maybe footer?)
-- [ ] Fix up header padding etc now that we don't have desktop chrome
+- [ ] Error handling for when sg scan fails
+- [ ] Need to do replacements based on offsets not the text itself
+- [ ] Loading state when scan is running
 - [ ] Perf improvements:
   - [ ] Some sort of inf scroll? if there are thousands of results, need to be able to handle that.
 - [ ] Ellispses if in thousands for line number
-- [ ] Error handling for when sg scan fails
-- [ ] Need to do replacements based on offsets not the text itself
 - [ ] Proper release workflow
-- [ ] Loading state when scan is running
 - [ ] Something is up with glob, using '*' really wonks stuff... don't use that as a default.
 - [ ] Kill process/browser window if the other close
+
+## Cleanup
+
+- [ ] Service fns for endpoint logic so the apiRoutes isn't fat as shit.
+- 
 
 ## FUTURE IMPROVEMENTS
 
