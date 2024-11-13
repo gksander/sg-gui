@@ -2,7 +2,7 @@
 
 This repo is still in early days, but its goal is to provide a GUI on top of [the amazing ast-grep](https://ast-grep.github.io/).
 
-![Screenshot](./docs/img/snapshot.png)
+![Screenshot](https://github.com/gksander/sg-gui/raw/main/docs/img/snapshot.png)
 
 It aims to expose as much of the `sg scan` functionality from AST-GREP as possible but display results in a beautiful web GUI that's easy to use and allow for easy experimentation with rewrites (that can be applied one "chunk" at a time).
 

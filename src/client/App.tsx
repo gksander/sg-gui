@@ -1,6 +1,7 @@
 import { QueryClientProvider, useSuspenseQueries } from "@tanstack/react-query";
 import { honoClient, queryClient, QueryKeys } from "./client.ts";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
+import { Helmet } from "react-helmet";
 // @ts-expect-error types mad, don't really care.
 import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
@@ -10,19 +11,25 @@ import { initMonacoWithShiki } from "@/client/lib/shiki.ts";
 
 function App() {
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <QueryClientProvider client={queryClient}>
-        <Suspense
-          fallback={
-            <div className="w-full h-full flex items-center justify-center">
-              Loading...
-            </div>
-          }
-        >
-          <BootstrapActiveProject />
-        </Suspense>
-      </QueryClientProvider>
-    </div>
+    <Fragment>
+      <Helmet>
+        <title>SG GUI</title>
+      </Helmet>
+
+      <div className="flex flex-col h-screen overflow-hidden">
+        <QueryClientProvider client={queryClient}>
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex items-center justify-center">
+                Loading...
+              </div>
+            }
+          >
+            <BootstrapActiveProject />
+          </Suspense>
+        </QueryClientProvider>
+      </div>
+    </Fragment>
   );
 }
 

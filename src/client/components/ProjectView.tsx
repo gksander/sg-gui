@@ -8,6 +8,7 @@ import {
 import Editor from "@monaco-editor/react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Fragment, useCallback, useMemo } from "react";
+import { Helmet } from "react-helmet";
 
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
@@ -26,7 +27,7 @@ type Props = {
   homedir: string;
 };
 
-export function ProjectView({ path }: Props) {
+export function ProjectView({ path, homedir }: Props) {
   const [input, setInput] = useStorePersistedState<string>({
     path,
     key: "input",
@@ -89,7 +90,7 @@ export function ProjectView({ path }: Props) {
 
   const isReplacement = !!results?.[0]?.[1]?.[0]?.replacement;
 
-  const { mutate } = useMutation({
+  const { mutate: replaceBytes } = useMutation({
     mutationFn: async (replacements: Record<string, SgGuiResultItem[]>) => {
       const request = honoClient["replace-bytes"]
         .$post({
@@ -151,19 +152,11 @@ export function ProjectView({ path }: Props) {
       queryClient.invalidateQueries({ queryKey: queryKey.slice(0, 1) }),
   });
 
-  /**
-   * Wrapped in view transition to enable smooth UI updates.
-   */
-  const replaceBytes = useCallback(
-    (replacements: Record<string, SgGuiResultItem[]>) => {
-      mutate(replacements);
-      // startViewTransition(() => mutate(replacements));
-    },
-    [mutate],
-  );
-
   return (
     <Fragment>
+      <Helmet>
+        <title>{path.replace(homedir, "~")}</title>
+      </Helmet>
       <div className="h-full overflow-hidden flex flex-row">
         <div className="w-[500px] flex flex-col">
           <LanguageAndGlobsInput

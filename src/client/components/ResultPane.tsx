@@ -46,16 +46,16 @@ export function ResultPane({
   // TODO: need to infinite scroll this... rendering all the shit at once ain't great.
 
   return (
-    <div className="absolute inset-0 overflow-y-auto overflow-x-hidden pretty-scrollbar isolate result-list">
+    <div className="absolute inset-0 overflow-y-auto overflow-x-hidden pretty-scrollbar isolate">
       <div className="flex justify-between items-center mb-4 px-6">
-        <span className="font-bold h-9 flex items-center">
+        <span className="font-bold pt-10 flex items-center">
           {numResults} matches in {numFiles} files
         </span>
 
         {isReplacement && <ReplaceButton onClick={replaceAll} multiple />}
       </div>
 
-      <div className="flex flex-col gap-y-4 pb-4">
+      <div className="flex flex-col gap-y-4 pb-6">
         <AnimatePresence
           initial={false}
           onExitComplete={() => setExiting(false)}
@@ -99,7 +99,7 @@ function FileResults({
   return (
     <motion.div
       key={file}
-      className="flex flex-col gap-2 px-6 exiting-element"
+      className="flex flex-col gap-2 px-6 "
       style={{
         viewTransitionName: `file-results-${results[0].id}`,
       }}
@@ -107,7 +107,7 @@ function FileResults({
       transition={{ duration: 0.2 }}
     >
       <div className="font-medium flex justify-between items-center sticky z-10 top-0 bg-background text-sm">
-        <span className="h-9 flex items-center">
+        <span className="pt-10 pb-6 flex items-center">
           {file}
           {results.length > 1 &&
             ` (${results.length} ${results.length === 1 ? "result" : "results"})`}
@@ -124,7 +124,7 @@ function FileResults({
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         <AnimatePresence
           initial={false}
           onExitComplete={() => {

@@ -17,8 +17,8 @@ const apiRoutes = new Hono()
   .get("/cwd", async (c) => {
     return c.json({
       // TODO: how to configure in dev...
-      cwd: process.cwd(),
-      // cwd: path.resolve(homedir(), "GitHub", "react-use"),
+      // cwd: process.cwd(),
+      cwd: path.resolve(homedir(), "GitHub", "react-use"),
     });
   })
   /**
