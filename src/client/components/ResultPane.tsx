@@ -11,8 +11,6 @@ import {
 import { FaCircleExclamation } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { Skeleton } from "@/client/components/ui/skeleton.tsx";
-import { ImSpinner2 } from "react-icons/im";
-import { clsx } from "clsx";
 
 type Props = {
   results: [string, SgGuiResultItem[]][] | undefined;
@@ -44,50 +42,47 @@ export function ResultPane({
   }
 
   if (error) {
-    return <ErrorView error={error} />;
+    return <ErrorView error={error} isFetching={isFetching} />;
   }
 
   if (numResults === 0) {
-    return <NoResultsView />;
+    return <NoResultsView isFetching={isFetching} />;
   }
 
   // TODO: need to infinite scroll this... rendering all the shit at once ain't great.
 
   return (
-    <div className="absolute inset-0 overflow-y-auto overflow-x-hidden pretty-scrollbar isolate">
-      <ImSpinner2
-        className={clsx(
-          "fixed bottom-4 right-4 w-8 h-8 z-10 opacity-0 transition-opacity duration-150 delay-300",
-          isFetching && "animate-spin opacity-100",
-        )}
-      />
+    <div className="absolute inset-0">
+      <FetchingIndicator isFetching={isFetching} />
 
-      <div className="flex justify-between items-center pt-9 pb-6 px-6">
-        <span className="font-bold flex items-center">
-          {numResults} matches in {numFiles} files
-        </span>
+      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden pretty-scrollbar isolate">
+        <div className="flex justify-between items-center pt-9 pb-6 px-6">
+          <span className="font-bold flex items-center">
+            {numResults} matches in {numFiles} files
+          </span>
 
-        {isReplacement && <ReplaceButton onClick={replaceAll} multiple />}
-      </div>
+          {isReplacement && <ReplaceButton onClick={replaceAll} multiple />}
+        </div>
 
-      <div className="flex flex-col gap-y-4 pb-6">
-        <AnimatePresence
-          initial={false}
-          onExitComplete={() => setExiting(false)}
-        >
-          {results?.map(([file, results]) => (
-            <FileResults
-              key={file}
-              file={file}
-              results={results}
-              isReplacement={isReplacement}
-              replaceBytes={replaceBytes}
-              languageId={languageId}
-              exiting={exiting}
-              setExiting={setExiting}
-            />
-          ))}
-        </AnimatePresence>
+        <div className="flex flex-col gap-y-4 pb-6">
+          <AnimatePresence
+            initial={false}
+            onExitComplete={() => setExiting(false)}
+          >
+            {results?.map(([file, results]) => (
+              <FileResults
+                key={file}
+                file={file}
+                results={results}
+                isReplacement={isReplacement}
+                replaceBytes={replaceBytes}
+                languageId={languageId}
+                exiting={exiting}
+                setExiting={setExiting}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
@@ -188,6 +183,14 @@ function FileResults({
   }
 }
 
+function FetchingIndicator({ isFetching }: { isFetching: boolean }) {
+  return (
+    <div className="absolute top-0 inset-x-6 h-1 rounded-lg bg-transparent select-none z-10 overflow-hidden">
+      <div className={isFetching ? "animate-loading-bar" : ""}></div>
+    </div>
+  );
+}
+
 function LoadingView() {
   return (
     <div className="px-6">
@@ -199,9 +202,15 @@ function LoadingView() {
   );
 }
 
-function ErrorView({ error }: { error: Error }) {
+function ErrorView({
+  error,
+  isFetching,
+}: {
+  error: Error;
+  isFetching: boolean;
+}) {
   return (
-    <ContentWrapper>
+    <ContentWrapper isFetching={isFetching}>
       <Alert variant="destructive">
         <FaCircleExclamation className="w-4 h-4" />
         <AlertTitle>Error</AlertTitle>
@@ -211,9 +220,9 @@ function ErrorView({ error }: { error: Error }) {
   );
 }
 
-function NoResultsView() {
+function NoResultsView({ isFetching }: { isFetching: boolean }) {
   return (
-    <ContentWrapper>
+    <ContentWrapper isFetching={isFetching}>
       <Alert>
         <AlertTitle>No results</AlertTitle>
         <AlertDescription>
@@ -224,6 +233,14 @@ function NoResultsView() {
   );
 }
 
-function ContentWrapper({ children }: PropsWithChildren) {
-  return <div className="px-6 pb-3 pt-8">{children}</div>;
+function ContentWrapper({
+  children,
+  isFetching,
+}: PropsWithChildren<{ isFetching?: boolean }>) {
+  return (
+    <div className="absolute inset-0">
+      <FetchingIndicator isFetching={isFetching ?? false} />
+      <div className="px-6 pb-3 pt-8">{children}</div>
+    </div>
+  );
 }

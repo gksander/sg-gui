@@ -166,7 +166,7 @@ export function ProjectView({ path, homedir }: Props) {
         <title>{path.replace(homedir, "~")}</title>
       </Helmet>
       <div className="h-full overflow-hidden flex flex-row">
-        <div className="w-[500px] flex flex-col">
+        <div className="w-[400px] lg:w-[500px] flex flex-col">
           <LanguageAndGlobsInput
             languageId={languageId}
             onChangeLanguageId={setLanguageId}

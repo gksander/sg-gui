@@ -1,12 +1,7 @@
 import { execa } from "execa";
 import { HTTPException } from "hono/http-exception";
 import yaml from "js-yaml";
-import type {
-  CharCount,
-  FormattedLine,
-  SgGuiResultItem,
-  SGResultRow,
-} from "@/types.js";
+import type { FormattedLine, SgGuiResultItem, SGResultRow } from "@/types.js";
 import { z } from "zod";
 import { StatusCode } from "hono/utils/http-status";
 import { diffLines } from "diff";
@@ -59,12 +54,7 @@ export async function execSgQuery(args: ExecSgQueryArgs) {
   const sgGuiResults = outputJson.map<SgGuiResultItem>((row) => {
     return {
       id: `${row.file.replace(/\W/g, "")}-${row.range.byteOffset.start}-${row.range.byteOffset.end}`,
-      formattedLines: linesToFormattedLines({
-        lines: row.lines,
-        startLineNo: row.range.start.line + 1,
-        replacement: row.replacement,
-        charCount: row.charCount,
-      }),
+      formattedLines: linesToFormattedLines(row),
       byteStart: row.range.byteOffset.start,
       byteEnd: row.range.byteOffset.end,
       file: row.file,
@@ -96,15 +86,12 @@ export async function execSgQuery(args: ExecSgQueryArgs) {
 
 function linesToFormattedLines({
   lines,
-  startLineNo,
+  text,
   replacement,
   charCount,
-}: {
-  lines: string;
-  replacement?: string;
-  startLineNo: number;
-  charCount: CharCount;
-}): FormattedLine[] {
+  range,
+}: SGResultRow): FormattedLine[] {
+  const startLineNo = range.start.line + 1;
   if (!replacement) {
     return lines.split("\n").map<FormattedLine>((line, i) => {
       return {
@@ -116,8 +103,7 @@ function linesToFormattedLines({
 
   const replacementLines =
     lines.slice(0, charCount.leading) +
-    replacement +
-    lines.slice(-charCount.trailing);
+    lines.slice(charCount.leading).replace(text, replacement);
 
   const lineChanges = diffLines(lines, replacementLines, {
     ignoreWhitespace: true,
