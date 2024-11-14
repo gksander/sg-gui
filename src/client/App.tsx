@@ -5,7 +5,7 @@ import {
   queryClient,
   QueryKeys,
 } from "./client.ts";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 // @ts-expect-error types mad, don't really care.
 import "@fontsource-variable/jetbrains-mono";
 import "./App.css";
@@ -15,8 +15,6 @@ import { initMonacoWithShiki } from "@/client/lib/shiki.ts";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
 export function App() {
-  usePingServerOnClose();
-
   return (
     <HelmetProvider>
       <Helmet>
@@ -82,22 +80,4 @@ function BootstrapActiveProject() {
   }
 
   return <ProjectView path={projectPath} homedir={homedir} />;
-}
-
-function usePingServerOnClose() {
-  useEffect(() => {
-    const controller = new AbortController();
-
-    window.addEventListener(
-      "unload",
-      () => {
-        console.log("PING");
-      },
-      { signal: controller.signal },
-    );
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
 }

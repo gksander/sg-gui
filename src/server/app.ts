@@ -13,7 +13,6 @@ const apiRoutes = new Hono()
    * Get cwd of process to determine what project path we're looking at
    */
   .get("/cwd", async (c) => {
-    console.log(process.env.NODE_ENV);
     return c.json({
       cwd: process.env.DIR || process.cwd(),
     });
