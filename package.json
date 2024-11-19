@@ -1,9 +1,19 @@
 {
   "name": "sg-gui",
   "private": false,
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/gksander/sg-gui",
+    "type": "git"
+  },
+  "keywords": [
+    "ast-grep",
+    "structural-search",
+    "code",
+    "devtools"
+  ],
   "scripts": {
     "dev:client": "vite",
     "dev:server": "tsx watch src/server/main.ts",
